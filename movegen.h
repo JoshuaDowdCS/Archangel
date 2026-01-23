@@ -12,8 +12,8 @@ class MoveGen
 
 public:
     static uint64_t perft(Board &board, int depth, bool isRoot);
-    static void generateMoves(Board &board, MoveList &list, bool onlyCaptures = false);
-    static bool isAttacked(Board &board, uint8_t targetSquare);
+    static void generateMoves(Board &board, MoveList &list);
+    static bool isPinned(const Board &board, uint8_t currPiece);
 
     // Square 0 = bottom-left, Square 63 = top-right
     static constexpr int directions[8] = {-1, 1, -8, 8, -7, 7, -9, 9};
@@ -163,7 +163,7 @@ private:
     static void bishopGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
     static void rookGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
     static void kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
-
+    static bool isAttacked(Board &board, uint8_t targetSquare);
     static bool kingIsAttacked(Board &board, uint8_t targetSquare);
     static bool tryMove(Board &board, Move testMove, uint8_t kingSquare = 255);
     static int disToEdge(uint8_t startPos, int direction);

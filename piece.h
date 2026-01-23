@@ -1,16 +1,22 @@
-#pragma once
+#ifndef PIECE_H
+#define PIECE_H
 
-namespace Piece
+#include <cstdint>
+
+class Piece
 {
-    inline constexpr int PAWN = 1;
-    inline constexpr int KNIGHT = 2;
-    inline constexpr int BISHOP = 3;
-    inline constexpr int ROOK = 4;
-    inline constexpr int QUEEN = 5;
-    inline constexpr int KING = 6;
-    inline constexpr int TYPE_MASK = 7;
+public:
+    static const uint8_t PAWN = 1;
+    static const uint8_t KNIGHT = 2;
+    static const uint8_t BISHOP = 3;
+    static const uint8_t ROOK = 4;
+    static const uint8_t QUEEN = 5;
+    static const uint8_t KING = 6;
+    static const uint8_t TYPE_MASK = 7;
 
-    inline constexpr int WHITE = 0;
-    inline constexpr int BLACK = 8;
-    inline constexpr int COLOR_MASK = 8;
+    static const uint8_t WHITE = 0;
+    static const uint8_t BLACK = 8;
+    static const uint8_t COLOR_MASK = 8;
 };
+
+#endif

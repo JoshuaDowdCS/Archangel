@@ -1,47 +1,23 @@
-#pragma once
+#ifndef MOVELIST_H
+#define MOVELIST_H
 
+#include <cstdint>
 #include "move.h"
-#include <assert.h> // For bounds checking in debug mode
 
 struct MoveList
 {
     Move moveList[256];
     int count = 0;
 
-    // Overload [] for access and modification
-    Move &operator[](int i)
-    {
-        assert(i >= 0 && i < count); // Optional: ensures you don't access uninitialized moves
-        return moveList[i];
-    }
-
-    // Overload [] for read-only access
-    const Move &operator[](int i) const
-    {
-        assert(i >= 0 && i < count);
-        return moveList[i];
-    }
-
-    void push_back(Move m)
+    void add(Move m)
     {
         moveList[count++] = m;
     }
 
-    void erase(int i)
+    void clear()
     {
-        assert(i >= 0 && i < count);
-        // Replace current move with the one at the end of the list
-        moveList[i] = moveList[count - 1];
-        // Shrink the count
-        count--;
+        count = 0;
     }
-
-    Move *begin() { return &moveList[0]; }
-    Move *end() { return &moveList[count]; }
-
-    const Move *begin() const { return &moveList[0]; }
-    const Move *end() const { return &moveList[count]; }
-
-    void clear() { count = 0; }
-    void printMoveList();
 };
+
+#endif

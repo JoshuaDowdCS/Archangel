@@ -27,5 +27,5 @@ int main(int argc, char *argv[])
         uint64_t totalNodes = MoveGen::perft(testBoard, depth, true);
 
         std::cout << "\n"
-                  << totalNodes << '\n';
+                  << totalNodes << std::endl;
 }

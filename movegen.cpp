@@ -36,7 +36,7 @@ uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 	return totalNodes;
 }
 
-void MoveGen::generateMoves(Board &board, MoveList &list)
+void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 {
 	Bitboard *friendlyPieces = board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
 	for (uint8_t i = 0; i < 64; i++)
@@ -81,6 +81,21 @@ void MoveGen::generateMoves(Board &board, MoveList &list)
 			}
 		}
 	}
+
+	if (onlyCaptures)
+	{
+		for (int i = list.count; i >= 0; i++)
+		{
+			int pieceCount = std::popcount(board.allCombined);
+			board.makeMove(list[i]);
+			pieceCount -= std::popcount(board.allCombined);
+			board.unmakeMove();
+			if (pieceCount != 0)
+			{
+				list.erase(i);
+			}
+		}
+	}
 }
 
 void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list)
@@ -94,55 +109,55 @@ void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 		{
 			if (startPos / 8 == 6)
 			{
-				list.add(Move(startPos, startPos + 7, Move::PROMOTION, Move::KNIGHT));
-				list.add(Move(startPos, startPos + 7, Move::PROMOTION, Move::BISHOP));
-				list.add(Move(startPos, startPos + 7, Move::PROMOTION, Move::ROOK));
-				list.add(Move(startPos, startPos + 7, Move::PROMOTION, Move::QUEEN));
+				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::KNIGHT));
+				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::BISHOP));
+				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::ROOK));
+				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::QUEEN));
 			}
 			else
 			{
-				list.add(Move(startPos, startPos + 7));
+				list.push_back(Move(startPos, startPos + 7));
 			}
 		}
 		if (startPos % 8 != 7 && ((bitPos << 9) & opponentPieces) != 0 && tryMove(board, Move(startPos, startPos + 9)))
 		{
 			if (startPos / 8 == 6)
 			{
-				list.add(Move(startPos, startPos + 9, Move::PROMOTION, Move::KNIGHT));
-				list.add(Move(startPos, startPos + 9, Move::PROMOTION, Move::BISHOP));
-				list.add(Move(startPos, startPos + 9, Move::PROMOTION, Move::ROOK));
-				list.add(Move(startPos, startPos + 9, Move::PROMOTION, Move::QUEEN));
+				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::KNIGHT));
+				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::BISHOP));
+				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::ROOK));
+				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::QUEEN));
 			}
 			else
 			{
-				list.add(Move(startPos, startPos + 9));
+				list.push_back(Move(startPos, startPos + 9));
 			}
 		}
 		if (((bitPos << 8) & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos + 8)))
 		{
 			if (startPos / 8 == 6)
 			{
-				list.add(Move(startPos, startPos + 8, Move::PROMOTION, Move::KNIGHT));
-				list.add(Move(startPos, startPos + 8, Move::PROMOTION, Move::BISHOP));
-				list.add(Move(startPos, startPos + 8, Move::PROMOTION, Move::ROOK));
-				list.add(Move(startPos, startPos + 8, Move::PROMOTION, Move::QUEEN));
+				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::KNIGHT));
+				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::BISHOP));
+				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::ROOK));
+				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::QUEEN));
 			}
 			else
 			{
-				list.add(Move(startPos, startPos + 8));
+				list.push_back(Move(startPos, startPos + 8));
 			}
 		}
 		if ((startPos / 8) == 1 && ((bitPos << 8) & board.allCombined) == 0 && (bitPos << 16 & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos + 16)))
 		{
-			list.add(Move(startPos, startPos + 16));
+			list.push_back(Move(startPos, startPos + 16));
 		}
 		if (startPos % 8 != 0 && board.passantSquare == startPos + 7 && tryMove(board, Move(startPos, startPos + 7, Move::PASSANT)))
 		{
-			list.add(Move(startPos, startPos + 7, Move::PASSANT));
+			list.push_back(Move(startPos, startPos + 7, Move::PASSANT));
 		}
 		if (startPos % 8 != 7 && board.passantSquare == startPos + 9 && tryMove(board, Move(startPos, startPos + 9, Move::PASSANT)))
 		{
-			list.add(Move(startPos, startPos + 9, Move::PASSANT));
+			list.push_back(Move(startPos, startPos + 9, Move::PASSANT));
 		}
 	}
 	else
@@ -151,14 +166,14 @@ void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 		{
 			if (startPos / 8 == 1)
 			{
-				list.add(Move(startPos, startPos - 7, Move::PROMOTION, Move::KNIGHT));
-				list.add(Move(startPos, startPos - 7, Move::PROMOTION, Move::BISHOP));
-				list.add(Move(startPos, startPos - 7, Move::PROMOTION, Move::ROOK));
-				list.add(Move(startPos, startPos - 7, Move::PROMOTION, Move::QUEEN));
+				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::KNIGHT));
+				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::BISHOP));
+				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::ROOK));
+				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::QUEEN));
 			}
 			else
 			{
-				list.add(Move(startPos, startPos - 7));
+				list.push_back(Move(startPos, startPos - 7));
 			}
 		}
 		if (startPos % 8 != 0 && ((bitPos >> 9) & opponentPieces) != 0 && tryMove(board, Move(startPos, startPos - 9)))
@@ -166,41 +181,41 @@ void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 
 			if (startPos / 8 == 1)
 			{
-				list.add(Move(startPos, startPos - 9, Move::PROMOTION, Move::KNIGHT));
-				list.add(Move(startPos, startPos - 9, Move::PROMOTION, Move::BISHOP));
-				list.add(Move(startPos, startPos - 9, Move::PROMOTION, Move::ROOK));
-				list.add(Move(startPos, startPos - 9, Move::PROMOTION, Move::QUEEN));
+				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::KNIGHT));
+				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::BISHOP));
+				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::ROOK));
+				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::QUEEN));
 			}
 			else
 			{
-				list.add(Move(startPos, startPos - 9));
+				list.push_back(Move(startPos, startPos - 9));
 			}
 		}
 		if (((bitPos >> 8) & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos - 8)))
 		{
 			if (startPos / 8 == 1)
 			{
-				list.add(Move(startPos, startPos - 8, Move::PROMOTION, Move::KNIGHT));
-				list.add(Move(startPos, startPos - 8, Move::PROMOTION, Move::BISHOP));
-				list.add(Move(startPos, startPos - 8, Move::PROMOTION, Move::ROOK));
-				list.add(Move(startPos, startPos - 8, Move::PROMOTION, Move::QUEEN));
+				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::KNIGHT));
+				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::BISHOP));
+				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::ROOK));
+				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::QUEEN));
 			}
 			else
 			{
-				list.add(Move(startPos, startPos - 8));
+				list.push_back(Move(startPos, startPos - 8));
 			}
 		}
 		if ((startPos / 8) == 6 && ((bitPos >> 8) & board.allCombined) == 0 && (bitPos >> 16 & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos - 16)))
 		{
-			list.add(Move(startPos, startPos - 16));
+			list.push_back(Move(startPos, startPos - 16));
 		}
 		if (startPos % 8 != 7 && board.passantSquare == startPos - 7 && tryMove(board, Move(startPos, startPos - 7, Move::PASSANT)))
 		{
-			list.add(Move(startPos, startPos - 7, Move::PASSANT));
+			list.push_back(Move(startPos, startPos - 7, Move::PASSANT));
 		}
 		if (startPos % 8 != 0 && board.passantSquare == startPos - 9 && tryMove(board, Move(startPos, startPos - 9, Move::PASSANT)))
 		{
-			list.add(Move(startPos, startPos - 9, Move::PASSANT));
+			list.push_back(Move(startPos, startPos - 9, Move::PASSANT));
 		}
 	}
 }
@@ -212,9 +227,9 @@ void MoveGen::knightGen(Board &board, uint8_t startPos, MoveList &list)
 	{
 
 		uint8_t endPos = knightMoves[startPos][i];
-		if ((friendlyPieces & board.bitPositions[endPos]) == 0 && tryMove(board, Move(startPos, endPos)))
+		if ((friendlyPieces & (1ULL << endPos)) == 0 && tryMove(board, Move(startPos, endPos)))
 		{
-			list.add(Move(startPos, endPos));
+			list.push_back(Move(startPos, endPos));
 		}
 	}
 }
@@ -240,13 +255,13 @@ void MoveGen::bishopGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveLis
 			{
 				if (tryMove(board, Move(startPos, targetPos)))
 				{
-					list.add(Move(startPos, targetPos));
+					list.push_back(Move(startPos, targetPos));
 				}
 				break;
 			}
 			else if ((board.allCombined & endBitPos) == 0 && tryMove(board, Move(startPos, targetPos)))
 			{
-				list.add(Move(startPos, targetPos));
+				list.push_back(Move(startPos, targetPos));
 				continue;
 			}
 		}
@@ -275,13 +290,13 @@ void MoveGen::rookGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 			{
 				if (tryMove(board, Move(startPos, targetPos)))
 				{
-					list.add(Move(startPos, targetPos));
+					list.push_back(Move(startPos, targetPos));
 				}
 				break;
 			}
 			else if ((board.allCombined & endBitPos) == 0 && tryMove(board, Move(startPos, targetPos)))
 			{
-				list.add(Move(startPos, targetPos));
+				list.push_back(Move(startPos, targetPos));
 				continue;
 			}
 		}
@@ -297,9 +312,9 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	{
 		uint8_t endPos = kingMoves[startPos][i];
 
-		if ((friendlyPieces & board.bitPositions[endPos]) == 0 && tryMove(board, Move(startPos, endPos), endPos))
+		if ((friendlyPieces & (1ULL << endPos)) == 0 && tryMove(board, Move(startPos, endPos), endPos))
 		{
-			list.add(Move(startPos, endPos));
+			list.push_back(Move(startPos, endPos));
 		}
 	}
 
@@ -311,7 +326,7 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 		    !kingIsAttacked(board, 4) && !kingIsAttacked(board, 5) && !kingIsAttacked(board, 6) &&
 		    tryMove(board, Move(4, 6, Move::CASTLING)))
 		{
-			list.add(Move(4, 6, Move::CASTLING));
+			list.push_back(Move(4, 6, Move::CASTLING));
 		}
 
 		if (board.whiteLongCastle &&
@@ -319,7 +334,7 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 		    !kingIsAttacked(board, 4) && !kingIsAttacked(board, 2) && !kingIsAttacked(board, 3) &&
 		    tryMove(board, Move(4, 2, Move::CASTLING)))
 		{
-			list.add(Move(4, 2, Move::CASTLING));
+			list.push_back(Move(4, 2, Move::CASTLING));
 		}
 	}
 	else
@@ -329,14 +344,14 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 		    (board.allCombined & blackShortEmpty) == 0 &&
 		    !kingIsAttacked(board, 60) && !kingIsAttacked(board, 61) && !kingIsAttacked(board, 62) && tryMove(board, Move(60, 62, Move::CASTLING)))
 		{
-			list.add(Move(60, 62, Move::CASTLING));
+			list.push_back(Move(60, 62, Move::CASTLING));
 		}
 
 		if (board.blackLongCastle &&
 		    (board.allCombined & blackLongEmpty) == 0 &&
 		    !kingIsAttacked(board, 60) && !kingIsAttacked(board, 59) && !kingIsAttacked(board, 58) && tryMove(board, Move(60, 58, Move::CASTLING)))
 		{
-			list.add(Move(60, 58, Move::CASTLING));
+			list.push_back(Move(60, 58, Move::CASTLING));
 		}
 	}
 }
@@ -352,7 +367,7 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 		for (int magnitude = 1; magnitude < disToEdge(targetSquare, directions[i]) + 1; magnitude++)
 		{
 			uint8_t shift = std::abs(directions[i] * magnitude);
-			Bitboard endBitPos = i % 2 == 0 ? board.bitPositions[targetSquare] >> shift : board.bitPositions[targetSquare] << shift;
+			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
 			if (((opponentPieces[Piece::BISHOP] & endBitPos) != 0 || (opponentPieces[Piece::QUEEN] & endBitPos) != 0))
 			{
@@ -372,7 +387,7 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 		{
 			uint8_t shift = std::abs(directions[i] * magnitude);
 
-			Bitboard endBitPos = i % 2 == 0 ? board.bitPositions[targetSquare] >> shift : board.bitPositions[targetSquare] << shift;
+			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
 			if (((opponentPieces[Piece::ROOK] & endBitPos) != 0 || (opponentPieces[Piece::QUEEN] & endBitPos) != 0))
 			{
@@ -389,7 +404,7 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 	for (int i = 0; i < 8 && knightMoves[targetSquare][i] != 255; i++)
 	{
 		uint8_t endPos = knightMoves[targetSquare][i];
-		if ((opponentPieces[Piece::KNIGHT] & board.bitPositions[endPos]) != 0)
+		if ((opponentPieces[Piece::KNIGHT] & (1ULL << endPos)) != 0)
 		{
 			return true;
 		}
@@ -399,14 +414,14 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 	for (int i = 0; i < 8 && kingMoves[targetSquare][i] != 255; i++)
 	{
 		uint8_t endPos = kingMoves[targetSquare][i];
-		if ((opponentPieces[Piece::KING] & board.bitPositions[endPos]) != 0)
+		if ((opponentPieces[Piece::KING] & (1ULL << endPos)) != 0)
 		{
 			return true;
 		}
 	}
 
 	// Pawns
-	Bitboard bitTargetSquare = board.bitPositions[targetSquare];
+	Bitboard bitTargetSquare = (1ULL << targetSquare);
 	if (!board.isWhiteTurn &&
 	    (((opponentPieces[Piece::PAWN] & (bitTargetSquare << 7)) != 0 && (targetSquare % 8) != 0) ||
 	     ((opponentPieces[Piece::PAWN] & (bitTargetSquare << 9)) != 0 && (targetSquare % 8) != 7)))
@@ -434,11 +449,10 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 		for (int magnitude = 1; magnitude < disToEdge(targetSquare, directions[i]) + 1; magnitude++)
 		{
 			uint8_t shift = std::abs(directions[i] * magnitude);
-			Bitboard endBitPos = i % 2 == 0 ? board.bitPositions[targetSquare] >> shift : board.bitPositions[targetSquare] << shift;
+			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
 			if (((opponentPieces[Piece::BISHOP] & endBitPos) != 0 || (opponentPieces[Piece::QUEEN] & endBitPos) != 0))
 			{
-
 				return true;
 			}
 			if ((board.allCombined & endBitPos) != 0)
@@ -455,7 +469,7 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 		{
 			uint8_t shift = std::abs(directions[i] * magnitude);
 
-			Bitboard endBitPos = i % 2 == 0 ? board.bitPositions[targetSquare] >> shift : board.bitPositions[targetSquare] << shift;
+			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
 			if (((opponentPieces[Piece::ROOK] & endBitPos) != 0 || (opponentPieces[Piece::QUEEN] & endBitPos) != 0))
 			{
@@ -472,7 +486,7 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 	for (int i = 0; i < 8 && knightMoves[targetSquare][i] != 255; i++)
 	{
 		uint8_t endPos = knightMoves[targetSquare][i];
-		if ((opponentPieces[Piece::KNIGHT] & board.bitPositions[endPos]) != 0)
+		if ((opponentPieces[Piece::KNIGHT] & (1ULL << endPos)) != 0)
 		{
 			return true;
 		}
@@ -482,17 +496,16 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 	for (int i = 0; i < 8 && kingMoves[targetSquare][i] != 255; i++)
 	{
 		uint8_t endPos = kingMoves[targetSquare][i];
-		if ((opponentPieces[Piece::KING] & board.bitPositions[endPos]) != 0)
+		if ((opponentPieces[Piece::KING] & (1ULL << endPos)) != 0)
 		{
 			return true;
 		}
 	}
 
 	// Pawns
-	Bitboard bitTargetSquare = board.bitPositions[targetSquare];
+	Bitboard bitTargetSquare = (1ULL << targetSquare);
 	if (board.isWhiteTurn && ((opponentPieces[Piece::PAWN] & (bitTargetSquare << 7)) != 0 || (opponentPieces[Piece::PAWN] & (bitTargetSquare << 9)) != 0))
 	{
-
 		return true;
 	}
 	else if (!board.isWhiteTurn && ((opponentPieces[Piece::PAWN] & (bitTargetSquare >> 7)) != 0 || (opponentPieces[Piece::PAWN] & (bitTargetSquare >> 9)) != 0))

@@ -13,7 +13,7 @@ class Board
 public:
     std::string startingFen;
 
-    Bitboard bitboards[2][8]; // 0 is combined, 1-6 holds piece type, 7 is pinned. White is 0, 1 is black
+    Bitboard bitboards[2][8]; // 0 is empty, 1-6 holds piece type, 7 is combined. White is 0, 1 is black
     Bitboard allCombined;
     int castlingRights; // stored as 0bXXXX. 1000 is white short, 0100 is WL, 0010 is BS, and 0001 is BL
     int passantSquare;

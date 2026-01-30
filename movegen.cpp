@@ -44,7 +44,7 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 	{
 		Bitboard bitPos = 1ULL << i;
 
-		if ((bitPos & friendlyPieces[0]) != 0)
+		if ((bitPos & friendlyPieces[7]) != 0)
 		{
 			switch (board.getSquareType(i))
 			{
@@ -96,7 +96,7 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 void MoveGen::pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
 
-	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
+	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
 
 	if (board.isSquareWhite(startPos))
 	{
@@ -158,7 +158,7 @@ void MoveGen::pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &lis
 
 void MoveGen::knightGen(Board &board, int startPos, MoveList &list)
 {
-	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
+	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
 	for (int i = 0; i < 8 && knightMoves[startPos][i] != 255; i++)
 	{
 
@@ -172,8 +172,8 @@ void MoveGen::knightGen(Board &board, int startPos, MoveList &list)
 
 void MoveGen::bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
-	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
-	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
+	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
+	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
 	for (int i = 4; i < 8; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(startPos, directions[i]) + 1; magnitude++)
@@ -206,8 +206,8 @@ void MoveGen::bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &l
 
 void MoveGen::rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
-	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
-	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
+	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
+	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
 	for (int i = 0; i < 4; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(startPos, directions[i]) + 1; magnitude++)
@@ -241,8 +241,8 @@ void MoveGen::rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &lis
 
 void MoveGen::kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
-	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
-	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
+	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
+	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
 
 	for (int i = 0; i < 8 && kingMoves[startPos][i] != 255; i++)
 	{

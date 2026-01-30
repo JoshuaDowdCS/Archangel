@@ -44,7 +44,6 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 	{
 		Bitboard bitPos = 1ULL << i;
 
-		std::cout << friendlyPieces[0] << std::endl;
 		if ((bitPos & friendlyPieces[0]) != 0)
 		{
 			switch (board.getSquareType(i))

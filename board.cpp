@@ -263,7 +263,7 @@ void Board::unmakeMove()
 	}
 	else if (previousMoves.back().moveType == 2)
 	{
-		if (isSquareWhite(currMove.getFrom()))
+		if (isWhiteTurn)
 		{
 			friendlyPieces[Piece::KING] = 1ULL << 4;
 

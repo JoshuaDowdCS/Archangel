@@ -8,6 +8,7 @@
 void Board::makeMove(Move currMove)
 {
 	moveHistory.push_back(currMove);
+
 	previousMoves.push_back({-1, -1, -1, -1});
 	previousMoves.back().castlingRights = castlingRights;
 	previousMoves.back().passantSquare = passantSquare;
@@ -243,50 +244,62 @@ void Board::unmakeMove()
 		int fromType = getSquareType(currMove.getTo());
 		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
 
-		// Updates friendly piece and combined Bitboards
 		friendlyPieces[fromType] ^= fromBit;
 
 		friendlyPieces[fromType] ^= toBit;
 
-		// Updates opponents piece and combined Bitboards if there is a capture
 		if (toType)
 		{
 			opponentPieces[toType] ^= toBit;
 		}
-
-		// Updates the piece array
 	}
 	else if (previousMoves.back().moveType == 1)
 	{
-		int promotionType = getSquareType(currMove.getTo());
-		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
-
-		// Updates friendly piece and combined Bitboards
 		friendlyPieces[Piece::PAWN] ^= fromBit;
 
-		friendlyPieces[promotionType] ^= toBit;
+		friendlyPieces[Piece::PAWN] ^= toBit;
 
-		// Updates opponents piece and combined Bitboards if there is a capture
-		if (toType)
-		{
-			opponentPieces[toType] ^= toBit;
-		}
+		opponentPieces[Piece::PAWN] ^= 1ULL << (currMove.getTo() + (isWhiteTurn ? -8 : 8));
 	}
 	else if (previousMoves.back().moveType == 2)
 	{
-		// TODO : Write castling unmake logic
+		if (isSquareWhite(currMove.getFrom()))
+		{
+			friendlyPieces[Piece::KING] = 1ULL << 4;
+
+			if (currMove.getTo() == 2)
+			{
+				friendlyPieces[Piece::ROOK] ^= 1ULL << 3;
+				friendlyPieces[Piece::ROOK] |= 1ULL << 0;
+			}
+			else
+			{
+				friendlyPieces[Piece::ROOK] ^= 1ULL << 5;
+				friendlyPieces[Piece::ROOK] |= 1ULL << 7;
+			}
+		}
+		else
+		{
+			friendlyPieces[Piece::KING] = 1ULL << 60;
+
+			if (currMove.getTo() == 58)
+			{
+				friendlyPieces[Piece::ROOK] ^= 1ULL << 59;
+				friendlyPieces[Piece::ROOK] |= 1ULL << 56;
+			}
+			else
+			{
+				friendlyPieces[Piece::ROOK] ^= 1ULL << 61;
+				friendlyPieces[Piece::ROOK] |= 1ULL << 63;
+			}
+		}
 	}
 	else if (previousMoves.back().moveType == 3)
 	{
-		int promotionType = getSquareType(currMove.getTo());
-		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
-
-		// Updates friendly piece and combined Bitboards
 		friendlyPieces[Piece::PAWN] ^= fromBit;
+		friendlyPieces[getSquareType(currMove.getTo())] ^= toBit;
 
-		friendlyPieces[promotionType] ^= toBit;
-
-		// Updates opponents piece and combined Bitboards if there is a capture
+		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
 		if (toType)
 		{
 			opponentPieces[toType] ^= toBit;

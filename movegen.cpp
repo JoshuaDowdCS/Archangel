@@ -38,11 +38,13 @@ uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 
 void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 {
+
 	Bitboard *friendlyPieces = board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
 	for (int i = 0; i < 64; i++)
 	{
 		Bitboard bitPos = 1ULL << i;
 
+		std::cout << friendlyPieces[0] << std::endl;
 		if ((bitPos & friendlyPieces[0]) != 0)
 		{
 			switch (board.getSquareType(i))
@@ -84,7 +86,7 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 			board.makeMove(list[i]);
 			pieceCount -= std::popcount(board.allCombined);
 			board.unmakeMove();
-			if (pieceCount != 0)
+			if (pieceCount == 0)
 			{
 				list.erase(i);
 			}

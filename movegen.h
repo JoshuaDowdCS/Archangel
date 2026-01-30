@@ -12,7 +12,7 @@ class MoveGen
     // Square 0 = bottom-left, Square 63 = top-right
     static constexpr int directions[8] = {-1, 1, -8, 8, -7, 7, -9, 9};
 
-    static constexpr uint8_t knightMoves[64][8] = {
+    static constexpr int knightMoves[64][8] = {
         {10, 17, 255, 255, 255, 255, 255, 255}, // Square 0 (a1)
         {11, 16, 18, 255, 255, 255, 255, 255},  // Square 1 (b1)
         {8, 12, 17, 19, 255, 255, 255, 255},    // Square 2 (c1)
@@ -79,7 +79,7 @@ class MoveGen
         {46, 53, 255, 255, 255, 255, 255, 255}  // Square 63 (h8)
     };
 
-    static constexpr uint8_t kingMoves[64][8] = {
+    static constexpr int kingMoves[64][8] = {
         {1, 8, 9, 255, 255, 255, 255, 255},    // Square 0 (a1)
         {0, 2, 8, 9, 10, 255, 255, 255},       // Square 1 (b1)
         {1, 3, 9, 10, 11, 255, 255, 255},      // Square 2 (c1)
@@ -154,18 +154,19 @@ class MoveGen
 public:
     static uint64_t perft(Board &board, int depth, bool isRoot);
     static void generateMoves(Board &board, MoveList &list, bool onlyCaptures = false);
-    static bool isAttacked(Board &board, uint8_t targetSquare);
+    static void addPawnMove(int startPos, int endPos, bool isPromotio, MoveList &list);
+    static bool isAttacked(Board &board, int targetSquare);
 
 private:
-    static void pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
-    static void knightGen(Board &board, uint8_t startPos, MoveList &list);
-    static void bishopGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
-    static void rookGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
-    static void kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list);
+    static void pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    static void knightGen(Board &board, int startPos, MoveList &list);
+    static void bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    static void rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    static void kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
 
-    static bool kingIsAttacked(Board &board, uint8_t targetSquare);
-    static bool tryMove(Board &board, Move testMove, uint8_t kingSquare = 255);
-    static int disToEdge(uint8_t startPos, int direction);
+    static bool kingIsAttacked(Board &board, int targetSquare);
+    static bool tryMove(Board &board, Move testMove, int kingSquare = 255);
+    static int disToEdge(int startPos, int direction);
 };
 
 #endif

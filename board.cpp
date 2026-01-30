@@ -8,21 +8,23 @@
 void Board::makeMove(Move currMove)
 {
 	moveHistory.push_back(currMove);
+	previousMoves.push_back({-1, -1, -1, -1});
+	passantSquare = -1;
 
 	Bitboard fromBit = 1ULL << currMove.getFrom();
 	Bitboard toBit = 1ULL << currMove.getTo();
-	int fromType = pieceArray[currMove.getFrom()] & Piece::TYPE_MASK;
-	int toType = pieceArray[currMove.getTo()] & Piece::TYPE_MASK;
+	int fromType = getSquareType(currMove.getFrom());
+	int toType = getSquareType(currMove.getTo());
 
-	passantSquare = -1;
+	previousMoves.back().capturedPiece = getSquareType(currMove.getTo()) | (isSquareWhite(currMove.getTo()) ? Piece::WHITE : Piece::BLACK);
 
 	if ((fromType == Piece::ROOK || fromType == Piece::KING))
 	{
-		if (isWhiteTurn && (whiteShortCastle || whiteLongCastle))
+		if (isWhiteTurn && (castlingRights & 0b1100))
 		{
 			rookKingMove(fromType, toType, fromBit, toBit, currMove);
 		}
-		else if (!isWhiteTurn && (blackLongCastle || blackShortCastle))
+		else if (!isWhiteTurn && (castlingRights & 0b0011))
 		{
 			rookKingMove(fromType, toType, fromBit, toBit, currMove);
 		}
@@ -40,178 +42,121 @@ void Board::makeMove(Move currMove)
 		pawnMove(fromType, toType, fromBit, toBit, currMove);
 	}
 
-	if (whiteShortCastle && toBit == (1ULL << 7))
+	castlingRights &= toBit == (1ULL << 7) ? 0b0111 : 0b1111;
+	castlingRights &= toBit == (1ULL << 0) ? 0b1011 : 0b1111;
+	castlingRights &= toBit == (1ULL << 63) ? 0b1101 : 0b1111;
+	castlingRights &= toBit == (1ULL << 56) ? 0b1110 : 0b1111;
+
+	bitboards[0][0] = 0;
+	bitboards[1][0] = 0;
+	for (int t = 1; t <= 6; t++)
 	{
-		whiteShortCastle = false;
+		bitboards[0][0] |= bitboards[0][t]; // White combined
+		bitboards[1][0] |= bitboards[1][t]; // Black combined
 	}
-	if (whiteLongCastle && toBit == (1ULL << 0))
-	{
-		whiteLongCastle = false;
-	}
-	if (blackShortCastle && toBit == (1ULL << 63))
-	{
-		blackShortCastle = false;
-	}
-	if (blackLongCastle && toBit == (1ULL << 56))
-	{
-		blackLongCastle = false;
-	}
+	allCombined = bitboards[0][0] | bitboards[1][0];
+
+	previousMoves.back().castlingRights = castlingRights;
+	previousMoves.back().passantSquare = passantSquare;
 
 	isWhiteTurn = !isWhiteTurn;
-
-	if (isWhiteTurn)
-	{
-		fullmoveCounter++;
-	}
+	fullmoveCounter += (int)isWhiteTurn;
 }
 
 void Board::normalMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit, Move currMove)
 {
+	previousMoves.back().moveType = 0;
+
 	Bitboard *friendlyPieces = isWhiteTurn ? bitboards[0] : bitboards[1];
 	Bitboard *opponentPieces = isWhiteTurn ? bitboards[1] : bitboards[0];
 	// Updates friendly piece and combined Bitboards
 	friendlyPieces[fromType] ^= fromBit;
-	friendlyPieces[0] ^= fromBit;
 
 	friendlyPieces[fromType] ^= toBit;
-	friendlyPieces[0] ^= toBit;
 
 	// Updates opponents piece and combined Bitboards if there is a capture
 	if (toType)
 	{
 		opponentPieces[toType] ^= toBit;
-		opponentPieces[0] ^= toBit;
-		allCombined ^= toBit;
 	}
-
-	// Updates combined board
-	allCombined = bitboards[0][0] | bitboards[1][0];
-
-	// Updates the piece array
-	pieceArray[currMove.getTo()] = pieceArray[currMove.getFrom()] & 0b1111;
-	pieceArray[currMove.getFrom()] = 0;
 }
 
 void Board::rookKingMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit, Move currMove)
 {
 	Bitboard *friendlyPieces = isWhiteTurn ? bitboards[0] : bitboards[1];
-	if ((pieceArray[currMove.getFrom()] & Piece::COLOR_MASK) == Piece::WHITE)
+
+	if (isSquareWhite(currMove.getFrom()))
 	{
 		if (fromType == Piece::KING)
 		{
-			whiteShortCastle = whiteLongCastle = false;
+			castlingRights &= 0b0011;
 		}
 		else if (currMove.getFrom() == 0 && Piece::ROOK)
 		{
-			whiteLongCastle = false;
+			castlingRights &= 0b1011;
 		}
 		else if (currMove.getFrom() == 7 && Piece::ROOK)
 		{
-			whiteShortCastle = false;
+			castlingRights &= 0b0111;
 		}
 	}
 	else
 	{
 		if (fromType == Piece::KING)
 		{
-			blackLongCastle = blackShortCastle = false;
+			castlingRights &= 0b1100;
 		}
 		else if (currMove.getFrom() == 56 && Piece::ROOK)
 		{
-			blackLongCastle = false;
+			castlingRights &= 0b1110;
 		}
 		else if (currMove.getFrom() == 63 && Piece::ROOK)
 		{
-			blackShortCastle = false;
+			castlingRights &= 0b1101;
 		}
 	}
 
 	if (currMove.isCastling())
 	{
-		if ((pieceArray[currMove.getFrom()] & Piece::COLOR_MASK) == Piece::WHITE)
+		previousMoves.back().moveType = 2;
+		if (isSquareWhite(currMove.getFrom()))
 		{
-			pieceArray[4] = 0;
 			friendlyPieces[Piece::KING] = 0;
-			friendlyPieces[0] ^= 1ULL << 4;
-			allCombined ^= 1ULL << 4;
 			if (currMove.getTo() == 2)
 			{
-				pieceArray[2] = Piece::KING | Piece::WHITE;
-				pieceArray[3] = Piece::ROOK | Piece::WHITE;
-				pieceArray[0] = 0;
-
 				friendlyPieces[Piece::KING] = 1ULL << 2;
-				friendlyPieces[0] |= 1ULL << 2;
-				allCombined |= 1ULL << 2;
 
 				friendlyPieces[Piece::ROOK] |= 1ULL << 3;
-				friendlyPieces[0] |= 1ULL << 3;
-				allCombined |= 1ULL << 3;
 
 				friendlyPieces[Piece::ROOK] ^= 1ULL << 0;
-				friendlyPieces[0] ^= 1ULL << 0;
-				allCombined ^= 1ULL << 0;
 			}
 			else
 			{
-				pieceArray[6] = Piece::KING | Piece::WHITE;
-				pieceArray[5] = Piece::ROOK | Piece::WHITE;
-				pieceArray[7] = 0;
-
 				friendlyPieces[Piece::KING] = 1ULL << 6;
-				friendlyPieces[0] |= 1ULL << 6;
-				allCombined |= 1ULL << 6;
 
 				friendlyPieces[Piece::ROOK] |= 1ULL << 5;
-				friendlyPieces[0] |= 1ULL << 5;
-				allCombined |= 1ULL << 5;
 
 				friendlyPieces[Piece::ROOK] ^= 1ULL << 7;
-				friendlyPieces[0] ^= 1ULL << 7;
-				allCombined ^= 1ULL << 7;
 			}
 		}
 		else
 		{
-			pieceArray[60] = 0;
 			friendlyPieces[Piece::KING] = 0;
-			friendlyPieces[0] ^= 1ULL << 60;
-			allCombined ^= 1ULL << 60;
 			if (currMove.getTo() == 58)
 			{
-				pieceArray[58] = Piece::KING | Piece::WHITE;
-				pieceArray[59] = Piece::ROOK | Piece::WHITE;
-				pieceArray[56] = 0;
-
 				friendlyPieces[Piece::KING] = 1ULL << 58;
-				friendlyPieces[0] |= 1ULL << 58;
-				allCombined |= 1ULL << 58;
 
 				friendlyPieces[Piece::ROOK] |= 1ULL << 59;
-				friendlyPieces[0] |= 1ULL << 59;
-				allCombined |= 1ULL << 59;
 
 				friendlyPieces[Piece::ROOK] ^= 1ULL << 56;
-				friendlyPieces[0] ^= 1ULL << 56;
-				allCombined ^= 1ULL << 56;
 			}
 			else
 			{
-				pieceArray[61] = Piece::ROOK | Piece::BLACK;
-				pieceArray[62] = Piece::KING | Piece::BLACK;
-				pieceArray[63] = 0;
-
 				friendlyPieces[Piece::KING] = 1ULL << 62;
-				friendlyPieces[0] |= 1ULL << 62;
-				allCombined |= 1ULL << 62;
 
 				friendlyPieces[Piece::ROOK] |= 1ULL << 61;
-				friendlyPieces[0] |= 1ULL << 61;
-				allCombined |= 1ULL << 61;
 
 				friendlyPieces[Piece::ROOK] ^= 1ULL << 63;
-				friendlyPieces[0] ^= 1ULL << 63;
-				allCombined ^= 1ULL << 63;
 			}
 		}
 	}
@@ -227,81 +172,52 @@ void Board::pawnMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit,
 	Bitboard *opponentPieces = isWhiteTurn ? bitboards[1] : bitboards[0];
 	if (currMove.isPassant())
 	{
+		previousMoves.back().moveType = 1;
 		int oppositeSquare = (currMove.getFrom() & ~0b111) + (currMove.getTo() & 0b111);
 
 		// Updates friendly piece and combined Bitboards
 		friendlyPieces[fromType] ^= fromBit;
-		friendlyPieces[0] ^= fromBit;
 
 		friendlyPieces[fromType] |= toBit;
-		friendlyPieces[0] |= toBit;
 
 		// Updates opponents piece and combined Bitboards if there is a capture
 		opponentPieces[Piece::PAWN] ^= 1ULL << oppositeSquare;
-		opponentPieces[0] ^= 1ULL << oppositeSquare;
-		allCombined ^= 1ULL << oppositeSquare;
-
-		// Updates combined board
-		allCombined ^= fromBit;
-		allCombined ^= toBit;
-
-		// Updates the piece array
-		pieceArray[currMove.getTo()] = pieceArray[currMove.getFrom()] & 0b1111;
-		pieceArray[currMove.getFrom()] = 0;
-		pieceArray[oppositeSquare] = 0;
 	}
 	else if (currMove.isPromotion())
 	{
+		previousMoves.back().moveType = 3;
 		int newColor = isWhiteTurn ? Piece::WHITE : Piece::BLACK;
 
 		friendlyPieces[Piece::PAWN] ^= fromBit;
-		friendlyPieces[0] ^= fromBit;
-		friendlyPieces[0] ^= toBit;
-
-		pieceArray[currMove.getFrom()] = 0;
 
 		if (currMove.getPromotion() == Move::QUEEN)
 		{
 			friendlyPieces[Piece::QUEEN] ^= toBit;
-			pieceArray[currMove.getTo()] = Piece::QUEEN | newColor;
 		}
 		else if (currMove.getPromotion() == Move::ROOK)
 		{
 			friendlyPieces[Piece::ROOK] ^= toBit;
-			pieceArray[currMove.getTo()] = Piece::ROOK | newColor;
 		}
 		else if (currMove.getPromotion() == Move::BISHOP)
 		{
 			friendlyPieces[Piece::BISHOP] ^= toBit;
-			pieceArray[currMove.getTo()] = Piece::BISHOP | newColor;
 		}
 		else
 		{
 			friendlyPieces[Piece::KNIGHT] ^= toBit;
-			pieceArray[currMove.getTo()] = Piece::KNIGHT | newColor;
 		}
 
 		if (toType)
 		{
 			opponentPieces[toType] ^= toBit;
-			opponentPieces[0] ^= toBit;
-			allCombined ^= toBit;
 		}
-
-		allCombined = bitboards[0][0] | bitboards[1][0];
 	}
 	else
 	{
 
-		if ((pieceArray[currMove.getFrom()] & Piece::COLOR_MASK) == Piece::WHITE &&
-		    ((currMove.getTo() / 8) - (currMove.getFrom() / 8)) == 2)
+		if (std::abs((currMove.getTo() / 8) - (currMove.getFrom() / 8)) == 2)
 		{
-			passantSquare = currMove.getTo() - 8;
-		}
-		else if ((pieceArray[currMove.getFrom()] & Piece::COLOR_MASK) == Piece::BLACK &&
-			 (currMove.getTo() / 8) - (currMove.getFrom() / 8) == -2)
-		{
-			passantSquare = currMove.getTo() + 8;
+			passantSquare = isSquareWhite(currMove.getFrom()) ? currMove.getTo() - 8 : currMove.getTo() + 8;
 		}
 
 		normalMove(fromType, toType, fromBit, toBit, currMove);
@@ -310,96 +226,182 @@ void Board::pawnMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit,
 
 void Board::unmakeMove()
 {
-	memcpy(bitboards, bitboardsInitial, sizeof(bitboards));
+	isWhiteTurn = !isWhiteTurn;
 
-	allCombined = allCombinedInitial;
+	Move currMove = moveHistory.back();
+	moveHistory.pop_back();
 
-	memcpy(pieceArray, pieceArrayInitial, sizeof(pieceArray));
+	Bitboard *friendlyPieces = isWhiteTurn ? bitboards[0] : bitboards[1];
+	Bitboard *opponentPieces = isWhiteTurn ? bitboards[1] : bitboards[0];
 
-	whiteShortCastle = whiteShortCastleInitial;
-	whiteLongCastle = whiteLongCastleInitial;
-	blackShortCastle = blackShortCastleInitial;
-	blackLongCastle = blackLongCastleInitial;
+	Bitboard fromBit = 1ULL << currMove.getFrom();
+	Bitboard toBit = 1ULL << currMove.getTo();
 
-	passantSquare = passantSquareInitial;
-	halfmoveClock = halfmoveClockInitial;
-
-	isWhiteTurn = isWhiteTurnInitial;
-	fullmoveCounter = fullmoveCounterInitial;
-
-	std::vector<Move> unmakeMoveHistory = moveHistory;
-	moveHistory = {};
-
-	for (int i = 0; i < unmakeMoveHistory.size() - 1; i++)
+	if (!previousMoves.back().moveType)
 	{
-		makeMove(unmakeMoveHistory[i]);
+		int fromType = getSquareType(currMove.getTo());
+		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
+
+		// Updates friendly piece and combined Bitboards
+		friendlyPieces[fromType] ^= fromBit;
+
+		friendlyPieces[fromType] ^= toBit;
+
+		// Updates opponents piece and combined Bitboards if there is a capture
+		if (toType)
+		{
+			opponentPieces[toType] ^= toBit;
+		}
+
+		// Updates the piece array
 	}
+	else if (previousMoves.back().moveType == 1)
+	{
+		int promotionType = getSquareType(currMove.getTo());
+		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
+
+		// Updates friendly piece and combined Bitboards
+		friendlyPieces[Piece::PAWN] ^= fromBit;
+
+		friendlyPieces[promotionType] ^= toBit;
+
+		// Updates opponents piece and combined Bitboards if there is a capture
+		if (toType)
+		{
+			opponentPieces[toType] ^= toBit;
+		}
+	}
+	else if (previousMoves.back().moveType == 2)
+	{
+		// TODO : Write castling unmake logic
+	}
+	else if (previousMoves.back().moveType == 3)
+	{
+		int promotionType = getSquareType(currMove.getTo());
+		int toType = previousMoves.back().capturedPiece & Piece::TYPE_MASK;
+
+		// Updates friendly piece and combined Bitboards
+		friendlyPieces[Piece::PAWN] ^= fromBit;
+
+		friendlyPieces[promotionType] ^= toBit;
+
+		// Updates opponents piece and combined Bitboards if there is a capture
+		if (toType)
+		{
+			opponentPieces[toType] ^= toBit;
+		}
+	}
+
+	bitboards[0][0] = 0;
+	bitboards[1][0] = 0;
+	for (int t = 1; t <= 6; t++)
+	{
+		bitboards[0][0] |= bitboards[0][t]; // White combined
+		bitboards[1][0] |= bitboards[1][t]; // Black combined
+	}
+	allCombined = bitboards[0][0] | bitboards[1][0];
+
+	// Reset pesky variables
+	castlingRights = previousMoves.back().castlingRights;
+	passantSquare = previousMoves.back().passantSquare;
+
+	previousMoves.pop_back();
+}
+
+bool Board::isSquareWhite(int index)
+{
+	if (bitboards[0][0] & (1ULL << index))
+	{
+		return true;
+	}
+	return false;
+}
+
+int Board::getSquareType(int index)
+{
+	if (bitboards[0][0] & (1ULL << index))
+	{
+		for (int i = Piece::PAWN; i <= Piece::KING; i++)
+		{
+			if (bitboards[0][i] & (1ULL << index))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	for (int i = Piece::PAWN; i <= Piece::KING; i++)
+	{
+		if (bitboards[1][i] & (1ULL << index))
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
 void Board::printChessBoard()
 {
-	std::cout << "  +-----------------+" << '\n';
-
 	for (int rank = 7; rank >= 0; rank--)
-	{ // Start from rank 8 down to 1
-		std::cout << rank + 1 << " | ";
-
+	{
+		std::cout << rank + 1 << "  ";
 		for (int file = 0; file < 8; file++)
 		{
-			int index = rank * 8 + file;
-			int piece = pieceArray[index];
 
-			if (piece == 0)
-			{
-				std::cout << ". "; // Empty square
-			}
-			else
-			{
+			int square = rank * 8 + file;
+			Bitboard mask = 1ULL << square;
+			char piece = '.';
 
-				char pieceChar;
-				switch (piece & Piece::TYPE_MASK)
-				{
-				case Piece::PAWN:
-					pieceChar = 'p';
-					break;
-				case Piece::KNIGHT:
-					pieceChar = 'n';
-					break;
-				case Piece::BISHOP:
-					pieceChar = 'b';
-					break;
-				case Piece::ROOK:
-					pieceChar = 'r';
-					break;
-				case Piece::QUEEN:
-					pieceChar = 'q';
-					break;
-				case Piece::KING:
-					pieceChar = 'k';
-					break;
-				default:
-					pieceChar = '?';
-					break;
-				}
+			// Check every board manually.
+			// Index 1=P, 2=N, 3=B, 4=R, 5=Q, 6=K
+			if (bitboards[0][1] & mask)
+				piece = 'P';
+			else if (bitboards[0][2] & mask)
+				piece = 'N';
+			else if (bitboards[0][3] & mask)
+				piece = 'B';
+			else if (bitboards[0][4] & mask)
+				piece = 'R';
+			else if (bitboards[0][5] & mask)
+				piece = 'Q';
+			else if (bitboards[0][6] & mask)
+				piece = 'K';
 
-				// Use Uppercase for White, Lowercase for Black
-				if ((piece & Piece::COLOR_MASK) == Piece::WHITE)
-				{
-					pieceChar = toupper(pieceChar);
-				}
+			else if (bitboards[1][1] & mask)
+				piece = 'p';
+			else if (bitboards[1][2] & mask)
+				piece = 'n';
+			else if (bitboards[1][3] & mask)
+				piece = 'b';
+			else if (bitboards[1][4] & mask)
+				piece = 'r';
+			else if (bitboards[1][5] & mask)
+				piece = 'q';
+			else if (bitboards[1][6] & mask)
+				piece = 'k';
 
-				std::cout << pieceChar << " ";
-			}
+			std::cout << piece << " ";
 		}
-		std::cout << "|" << '\n';
+		std::cout << "\n";
 	}
+	std::cout << "\n   a b c d e f g h\n";
 
-	std::cout << "  +-----------------+" << '\n';
-	std::cout << "    a b c d e f g h" << '\n';
+	std::cout << (uint64_t)allCombined << std::endl;
+	for (int i = 0; i <= Piece::KING; i++)
+	{
+		std::cout << (uint64_t)bitboards[0][i] << " - " << (int)i << std::endl;
+	}
+	for (int i = 0; i <= Piece::KING; i++)
+	{
+		std::cout << (uint64_t)bitboards[1][i] << " - " << (int)i << std::endl;
+	}
 }
 
 Board::Board(std::string fenString)
 {
+	startingFen = fenString;
+
 	moveHistory.reserve(10);
 
 	for (int color = 0; color < 2; color++)
@@ -412,14 +414,11 @@ Board::Board(std::string fenString)
 
 	allCombined = 0;
 
-	whiteShortCastle = whiteLongCastle = blackShortCastle = blackLongCastle = false;
+	castlingRights = 0b0000;
 	passantSquare = 0;
 	halfmoveClock = 0;
 	fullmoveCounter = 1;
 	isWhiteTurn = true;
-
-	for (int i = 0; i < 64; i++)
-		pieceArray[i] = 0;
 
 	int rank = 7;
 	int file = 0;
@@ -471,7 +470,6 @@ Board::Board(std::string fenString)
 
 		// SET THE BITS
 		bitboards[color][type] |= bit;
-		pieceArray[currSquare] = (color == 0 ? Piece::WHITE : Piece::BLACK) + type;
 
 		file++;
 		i++;
@@ -504,16 +502,16 @@ Board::Board(std::string fenString)
 			switch (fenString[i])
 			{
 			case 'K':
-				whiteShortCastle = true;
+				castlingRights |= 0b1000;
 				break;
 			case 'Q':
-				whiteLongCastle = true;
+				castlingRights |= 0b0100;
 				break;
 			case 'k':
-				blackShortCastle = true;
+				castlingRights |= 0b0010;
 				break;
 			case 'q':
-				blackLongCastle = true;
+				castlingRights |= 0b0001;
 				break;
 			}
 			i++;
@@ -570,23 +568,6 @@ Board::Board(std::string fenString)
 		else
 			fullmoveCounter = 1;
 	}
-
-	memcpy(bitboardsInitial, bitboards, sizeof(bitboardsInitial));
-
-	allCombinedInitial = allCombined;
-
-	memcpy(pieceArrayInitial, pieceArray, sizeof(pieceArrayInitial));
-
-	whiteShortCastleInitial = whiteShortCastle;
-	whiteLongCastleInitial = whiteLongCastle;
-	blackShortCastleInitial = blackShortCastle;
-	blackLongCastleInitial = blackLongCastle;
-
-	passantSquareInitial = passantSquare;
-	halfmoveClockInitial = halfmoveClock;
-
-	isWhiteTurnInitial = isWhiteTurn;
-	fullmoveCounterInitial = fullmoveCounter;
 }
 
 Move Board::parseMove(std::string moveStr)
@@ -623,8 +604,8 @@ Move Board::parseMove(std::string moveStr)
 	// Perftree sends these as standard moves (e.g., e1g1 for white kingside castle).
 	// To set the flags correctly, we check the piece types on the current board.
 
-	int piece = pieceArray[fromSq]; // Assume you have a way to get the piece type
-	int targetPiece = pieceArray[toSq];
+	int piece = getSquareType(fromSq); // Assume you have a way to get the piece type
+	int targetPiece = getSquareType(toSq);
 
 	// Extract the type (Pawn, King, etc.) by masking out the color
 	int pieceType = piece & Piece::TYPE_MASK;
@@ -691,10 +672,6 @@ bool Board::isKingAttacked(bool isWhiteKing)
 	return MoveGen::isAttacked(*this, std::countr_zero(friendlyKing));
 }
 
-#include <iostream>
-#include <iomanip>
-#include <cstring> // For memcpy if you prefer, or use loops as below
-
 void Board::printMoveHistory()
 {
 	if (moveHistory.empty())
@@ -706,40 +683,7 @@ void Board::printMoveHistory()
 	std::cout << "Move History (Replay " << moveHistory.size() << " moves):" << '\n';
 	std::cout << std::string(50, '-') << '\n';
 
-	// 1. Create a temporary board for replaying
-	// We initialize it with the standard start position to ensure the object is valid,
-	// then we will immediately overwrite it with the stored Initial state.
-	Board replayBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
-	// 2. Restore the specific Initial conditions of THIS board into the replay board
-	// Copy Bitboards
-	for (int i = 0; i < 2; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			replayBoard.bitboards[i][j] = this->bitboardsInitial[i][j];
-		}
-	}
-	replayBoard.allCombined = this->allCombinedInitial;
-
-	// Copy Piece Array
-	for (int i = 0; i < 64; i++)
-	{
-		replayBoard.pieceArray[i] = this->pieceArrayInitial[i];
-	}
-
-	// Copy Game State Flags
-	replayBoard.whiteShortCastle = this->whiteShortCastleInitial;
-	replayBoard.whiteLongCastle = this->whiteLongCastleInitial;
-	replayBoard.blackShortCastle = this->blackShortCastleInitial;
-	replayBoard.blackLongCastle = this->blackLongCastleInitial;
-	replayBoard.passantSquare = this->passantSquareInitial;
-	replayBoard.halfmoveClock = this->halfmoveClockInitial;
-	replayBoard.isWhiteTurn = this->isWhiteTurnInitial;
-	replayBoard.fullmoveCounter = this->fullmoveCounterInitial;
-
-	// Ensure the replay board's history is clear before we start adding to it
-	replayBoard.moveHistory.clear();
+	Board replayBoard(startingFen);
 
 	// 3. Iterate through history and replay moves
 	for (size_t i = 0; i < moveHistory.size(); i++)
@@ -781,8 +725,6 @@ void Board::printMoveHistory()
 			std::cout << " (en passant)";
 		}
 
-		// --- REPLAY LOGIC ---
-		// Apply the move to our temporary board
 		replayBoard.makeMove(move);
 
 		std::cout << '\n';

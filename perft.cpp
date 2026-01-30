@@ -29,3 +29,18 @@ int main(int argc, char *argv[])
         std::cout << "\n"
                   << totalNodes << std::endl;
 }
+
+// int main(int argc, char *argv[])
+// {
+//         Board testBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+//         testBoard.printChessBoard();
+
+//         testBoard.makeMove(Move(8, 16));
+
+//         testBoard.printChessBoard();
+
+//         testBoard.unmakeMove();
+
+//         testBoard.printChessBoard();
+// }

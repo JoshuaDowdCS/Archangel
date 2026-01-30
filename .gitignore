@@ -3,8 +3,6 @@
 .DS_Store
 
 *.o
+*.bin
 
 /Launch*
-
-perft-tester
-RENAME-ME

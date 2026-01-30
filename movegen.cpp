@@ -39,15 +39,13 @@ uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 {
 	Bitboard *friendlyPieces = board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
-	for (uint8_t i = 0; i < 64; i++)
+	for (int i = 0; i < 64; i++)
 	{
 		Bitboard bitPos = 1ULL << i;
 
 		if ((bitPos & friendlyPieces[0]) != 0)
 		{
-			int currPiece = board.pieceArray[i];
-
-			switch (currPiece & 7)
+			switch (board.getSquareType(i))
 			{
 			case Piece::PAWN:
 				pawnGen(board, i, bitPos, list);
@@ -71,11 +69,7 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 			default:
 				std::cout << "You have reached the default case. This is bad." << std::endl;
 				board.printChessBoard();
-				for (int i = 0; i < 4; i++)
-				{
-					std::cout << (int)board.moveHistory[i].getFrom() << std::endl;
-					std::cout << (int)board.moveHistory[i].getTo() << std::endl;
-				}
+				board.printMoveHistory();
 				std::cout << (int)i << std::endl;
 				throw std::exception();
 			}
@@ -98,55 +92,42 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 	}
 }
 
-void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list)
+void MoveGen::addPawnMove(int startPos, int endPos, bool isPromotion, MoveList &list)
+{
+	if (isPromotion)
+	{
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::KNIGHT));
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::BISHOP));
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::ROOK));
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::QUEEN));
+	}
+	else
+	{
+		list.push_back(Move(startPos, endPos));
+	}
+}
+
+void MoveGen::pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
 
 	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
 
-	if ((board.pieceArray[startPos] & Piece::COLOR_MASK) == Piece::WHITE)
+	if (board.isSquareWhite(startPos))
 	{
+		// Possible promotion moves
 		if (startPos % 8 != 0 && ((bitPos << 7) & opponentPieces) != 0 && tryMove(board, Move(startPos, startPos + 7)))
 		{
-			if (startPos / 8 == 6)
-			{
-				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::KNIGHT));
-				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::BISHOP));
-				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::ROOK));
-				list.push_back(Move(startPos, startPos + 7, Move::PROMOTION, Move::QUEEN));
-			}
-			else
-			{
-				list.push_back(Move(startPos, startPos + 7));
-			}
+			addPawnMove(startPos, startPos + 7, startPos / 8 == 6, list);
 		}
 		if (startPos % 8 != 7 && ((bitPos << 9) & opponentPieces) != 0 && tryMove(board, Move(startPos, startPos + 9)))
 		{
-			if (startPos / 8 == 6)
-			{
-				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::KNIGHT));
-				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::BISHOP));
-				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::ROOK));
-				list.push_back(Move(startPos, startPos + 9, Move::PROMOTION, Move::QUEEN));
-			}
-			else
-			{
-				list.push_back(Move(startPos, startPos + 9));
-			}
+			addPawnMove(startPos, startPos + 9, startPos / 8 == 6, list);
 		}
 		if (((bitPos << 8) & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos + 8)))
 		{
-			if (startPos / 8 == 6)
-			{
-				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::KNIGHT));
-				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::BISHOP));
-				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::ROOK));
-				list.push_back(Move(startPos, startPos + 8, Move::PROMOTION, Move::QUEEN));
-			}
-			else
-			{
-				list.push_back(Move(startPos, startPos + 8));
-			}
+			addPawnMove(startPos, startPos + 8, startPos / 8 == 6, list);
 		}
+		// Promotion not possible
 		if ((startPos / 8) == 1 && ((bitPos << 8) & board.allCombined) == 0 && (bitPos << 16 & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos + 16)))
 		{
 			list.push_back(Move(startPos, startPos + 16));
@@ -164,46 +145,15 @@ void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	{
 		if (startPos % 8 != 7 && ((bitPos >> 7) & opponentPieces) != 0 && tryMove(board, Move(startPos, startPos - 7)))
 		{
-			if (startPos / 8 == 1)
-			{
-				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::KNIGHT));
-				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::BISHOP));
-				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::ROOK));
-				list.push_back(Move(startPos, startPos - 7, Move::PROMOTION, Move::QUEEN));
-			}
-			else
-			{
-				list.push_back(Move(startPos, startPos - 7));
-			}
+			addPawnMove(startPos, startPos - 7, startPos / 8 == 1, list);
 		}
 		if (startPos % 8 != 0 && ((bitPos >> 9) & opponentPieces) != 0 && tryMove(board, Move(startPos, startPos - 9)))
 		{
-
-			if (startPos / 8 == 1)
-			{
-				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::KNIGHT));
-				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::BISHOP));
-				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::ROOK));
-				list.push_back(Move(startPos, startPos - 9, Move::PROMOTION, Move::QUEEN));
-			}
-			else
-			{
-				list.push_back(Move(startPos, startPos - 9));
-			}
+			addPawnMove(startPos, startPos - 9, startPos / 8 == 1, list);
 		}
 		if (((bitPos >> 8) & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos - 8)))
 		{
-			if (startPos / 8 == 1)
-			{
-				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::KNIGHT));
-				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::BISHOP));
-				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::ROOK));
-				list.push_back(Move(startPos, startPos - 8, Move::PROMOTION, Move::QUEEN));
-			}
-			else
-			{
-				list.push_back(Move(startPos, startPos - 8));
-			}
+			addPawnMove(startPos, startPos - 8, startPos / 8 == 1, list);
 		}
 		if ((startPos / 8) == 6 && ((bitPos >> 8) & board.allCombined) == 0 && (bitPos >> 16 & board.allCombined) == 0 && tryMove(board, Move(startPos, startPos - 16)))
 		{
@@ -220,13 +170,13 @@ void MoveGen::pawnGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	}
 }
 
-void MoveGen::knightGen(Board &board, uint8_t startPos, MoveList &list)
+void MoveGen::knightGen(Board &board, int startPos, MoveList &list)
 {
 	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
 	for (int i = 0; i < 8 && knightMoves[startPos][i] != 255; i++)
 	{
 
-		uint8_t endPos = knightMoves[startPos][i];
+		int endPos = knightMoves[startPos][i];
 		if ((friendlyPieces & (1ULL << endPos)) == 0 && tryMove(board, Move(startPos, endPos)))
 		{
 			list.push_back(Move(startPos, endPos));
@@ -234,11 +184,11 @@ void MoveGen::knightGen(Board &board, uint8_t startPos, MoveList &list)
 	}
 }
 
-void MoveGen::bishopGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list)
+void MoveGen::bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
 	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
 	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
-	for (uint8_t i = 4; i < 8; i++)
+	for (int i = 4; i < 8; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(startPos, directions[i]) + 1; magnitude++)
 		{
@@ -268,11 +218,11 @@ void MoveGen::bishopGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveLis
 	}
 }
 
-void MoveGen::rookGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list)
+void MoveGen::rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
 	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
 	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
-	for (uint8_t i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(startPos, directions[i]) + 1; magnitude++)
 		{
@@ -303,14 +253,14 @@ void MoveGen::rookGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	}
 }
 
-void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList &list)
+void MoveGen::kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
 	Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][0] : board.bitboards[1][0];
 	Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][0] : board.bitboards[0][0];
 
 	for (int i = 0; i < 8 && kingMoves[startPos][i] != 255; i++)
 	{
-		uint8_t endPos = kingMoves[startPos][i];
+		int endPos = kingMoves[startPos][i];
 
 		if ((friendlyPieces & (1ULL << endPos)) == 0 && tryMove(board, Move(startPos, endPos), endPos))
 		{
@@ -319,9 +269,9 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	}
 
 	// Handles castling
-	if ((board.pieceArray[startPos] & Piece::COLOR_MASK) == Piece::WHITE)
+	if (board.isSquareWhite(startPos))
 	{
-		if (board.whiteShortCastle &&
+		if ((board.castlingRights & 0b1000) &&
 		    (board.allCombined & whiteShortEmpty) == 0 &&
 		    !kingIsAttacked(board, 4) && !kingIsAttacked(board, 5) && !kingIsAttacked(board, 6) &&
 		    tryMove(board, Move(4, 6, Move::CASTLING)))
@@ -329,7 +279,7 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 			list.push_back(Move(4, 6, Move::CASTLING));
 		}
 
-		if (board.whiteLongCastle &&
+		if ((board.castlingRights & 0b0100) &&
 		    (board.allCombined & whiteLongEmpty) == 0 &&
 		    !kingIsAttacked(board, 4) && !kingIsAttacked(board, 2) && !kingIsAttacked(board, 3) &&
 		    tryMove(board, Move(4, 2, Move::CASTLING)))
@@ -340,14 +290,14 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	else
 	{
 
-		if (board.blackShortCastle &&
+		if ((board.castlingRights & 0b0010) &&
 		    (board.allCombined & blackShortEmpty) == 0 &&
 		    !kingIsAttacked(board, 60) && !kingIsAttacked(board, 61) && !kingIsAttacked(board, 62) && tryMove(board, Move(60, 62, Move::CASTLING)))
 		{
 			list.push_back(Move(60, 62, Move::CASTLING));
 		}
 
-		if (board.blackLongCastle &&
+		if ((board.castlingRights & 0b0001) &&
 		    (board.allCombined & blackLongEmpty) == 0 &&
 		    !kingIsAttacked(board, 60) && !kingIsAttacked(board, 59) && !kingIsAttacked(board, 58) && tryMove(board, Move(60, 58, Move::CASTLING)))
 		{
@@ -356,17 +306,17 @@ void MoveGen::kingGen(Board &board, uint8_t startPos, Bitboard bitPos, MoveList 
 	}
 }
 
-bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
+bool MoveGen::isAttacked(Board &board, int targetSquare)
 {
 	Bitboard *friendlyPieces = !board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
 	Bitboard *opponentPieces = !board.isWhiteTurn ? board.bitboards[1] : board.bitboards[0];
 
 	// Bishops
-	for (uint8_t i = 4; i < 8; i++)
+	for (int i = 4; i < 8; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(targetSquare, directions[i]) + 1; magnitude++)
 		{
-			uint8_t shift = std::abs(directions[i] * magnitude);
+			int shift = std::abs(directions[i] * magnitude);
 			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
 			if (((opponentPieces[Piece::BISHOP] & endBitPos) != 0 || (opponentPieces[Piece::QUEEN] & endBitPos) != 0))
@@ -381,11 +331,11 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 	}
 
 	// Rooks
-	for (uint8_t i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(targetSquare, directions[i]) + 1; magnitude++)
 		{
-			uint8_t shift = std::abs(directions[i] * magnitude);
+			int shift = std::abs(directions[i] * magnitude);
 
 			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
@@ -403,7 +353,7 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 	// Knights
 	for (int i = 0; i < 8 && knightMoves[targetSquare][i] != 255; i++)
 	{
-		uint8_t endPos = knightMoves[targetSquare][i];
+		int endPos = knightMoves[targetSquare][i];
 		if ((opponentPieces[Piece::KNIGHT] & (1ULL << endPos)) != 0)
 		{
 			return true;
@@ -413,7 +363,7 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 	// Kings
 	for (int i = 0; i < 8 && kingMoves[targetSquare][i] != 255; i++)
 	{
-		uint8_t endPos = kingMoves[targetSquare][i];
+		int endPos = kingMoves[targetSquare][i];
 		if ((opponentPieces[Piece::KING] & (1ULL << endPos)) != 0)
 		{
 			return true;
@@ -438,17 +388,17 @@ bool MoveGen::isAttacked(Board &board, uint8_t targetSquare)
 	return false;
 }
 
-bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
+bool MoveGen::kingIsAttacked(Board &board, int targetSquare)
 {
 	Bitboard *friendlyPieces = board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
 	Bitboard *opponentPieces = board.isWhiteTurn ? board.bitboards[1] : board.bitboards[0];
 
 	// Bishops
-	for (uint8_t i = 4; i < 8; i++)
+	for (int i = 4; i < 8; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(targetSquare, directions[i]) + 1; magnitude++)
 		{
-			uint8_t shift = std::abs(directions[i] * magnitude);
+			int shift = std::abs(directions[i] * magnitude);
 			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
 			if (((opponentPieces[Piece::BISHOP] & endBitPos) != 0 || (opponentPieces[Piece::QUEEN] & endBitPos) != 0))
@@ -463,11 +413,11 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 	}
 
 	// Rooks
-	for (uint8_t i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		for (int magnitude = 1; magnitude < disToEdge(targetSquare, directions[i]) + 1; magnitude++)
 		{
-			uint8_t shift = std::abs(directions[i] * magnitude);
+			int shift = std::abs(directions[i] * magnitude);
 
 			Bitboard endBitPos = i % 2 == 0 ? (1ULL << targetSquare) >> shift : (1ULL << targetSquare) << shift;
 
@@ -485,7 +435,7 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 	// Knights
 	for (int i = 0; i < 8 && knightMoves[targetSquare][i] != 255; i++)
 	{
-		uint8_t endPos = knightMoves[targetSquare][i];
+		int endPos = knightMoves[targetSquare][i];
 		if ((opponentPieces[Piece::KNIGHT] & (1ULL << endPos)) != 0)
 		{
 			return true;
@@ -495,7 +445,7 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 	// Kings
 	for (int i = 0; i < 8 && kingMoves[targetSquare][i] != 255; i++)
 	{
-		uint8_t endPos = kingMoves[targetSquare][i];
+		int endPos = kingMoves[targetSquare][i];
 		if ((opponentPieces[Piece::KING] & (1ULL << endPos)) != 0)
 		{
 			return true;
@@ -516,7 +466,7 @@ bool MoveGen::kingIsAttacked(Board &board, uint8_t targetSquare)
 	return false;
 }
 
-bool MoveGen::tryMove(Board &board, Move testMove, uint8_t kingSquare)
+bool MoveGen::tryMove(Board &board, Move testMove, int kingSquare)
 {
 
 	Bitboard friendlyKing;
@@ -537,7 +487,7 @@ bool MoveGen::tryMove(Board &board, Move testMove, uint8_t kingSquare)
 	return legal;
 }
 
-int MoveGen::disToEdge(uint8_t startPos, int direction)
+int MoveGen::disToEdge(int startPos, int direction)
 {
 	int file = startPos % 8;
 	int rank = startPos / 8;

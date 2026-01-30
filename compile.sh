@@ -8,7 +8,7 @@ clang++ -std=c++20 -O3 -ffast-math \
 -Xpreprocessor -fopenmp \
 -I/opt/homebrew/opt/libomp/include \
 -L/opt/homebrew/opt/libomp/lib -lomp \
-*.cpp -o RENAME-ME
+*.cpp -o RENAME-ME.bin
 
 # Clear the ignore rule
 unset GLOBIGNORE

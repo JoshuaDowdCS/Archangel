@@ -1,6 +1,7 @@
 .vscode
 
 .DS_Store
+perft-tester.bin.dSYM
 
 *.o
 *.bin

@@ -3,19 +3,19 @@
 if [ ! -f ./perft-tester ]; then
     export GLOBIGNORE="main.cpp"
 
-    # clang++ -std=c++20 -O3 -g -ffast-math \
-    # -mcpu=apple-m4 -flto=thin \
-    # -Xpreprocessor -fopenmp \
-    # -I/opt/homebrew/opt/libomp/include \
-    # -L/opt/homebrew/opt/libomp/lib -lomp \
-    # *.cpp -o perft-tester
+    clang++ -std=c++20 -O3 -g -ffast-math \
+    -mcpu=apple-m4 -flto=thin \
+    -Xpreprocessor -fopenmp \
+    -I/opt/homebrew/opt/libomp/include \
+    -L/opt/homebrew/opt/libomp/lib -lomp \
+    *.cpp -o perft-tester
 
-    clang++ -std=c++20 -O0 -g -fno-inline \
-        -mcpu=apple-m4 \
-        -Xpreprocessor -fopenmp \
-        -I/opt/homebrew/opt/libomp/include \
-        -L/opt/homebrew/opt/libomp/lib -lomp \
-        *.cpp -o perft-tester.bin
+    # clang++ -std=c++20 -O0 -g -fno-inline \
+    #     -mcpu=apple-m4 \
+    #     -Xpreprocessor -fopenmp \
+    #     -I/opt/homebrew/opt/libomp/include \
+    #     -L/opt/homebrew/opt/libomp/lib -lomp \
+    #     *.cpp -o perft-tester.bin
     unset GLOBIGNORE
 fi
 

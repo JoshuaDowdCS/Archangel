@@ -92,21 +92,6 @@ void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
 	}
 }
 
-void MoveGen::addPawnMove(int startPos, int endPos, bool isPromotion, MoveList &list)
-{
-	if (isPromotion)
-	{
-		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::KNIGHT));
-		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::BISHOP));
-		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::ROOK));
-		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::QUEEN));
-	}
-	else
-	{
-		list.push_back(Move(startPos, endPos));
-	}
-}
-
 void MoveGen::pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list)
 {
 
@@ -514,4 +499,19 @@ int MoveGen::disToEdge(int startPos, int direction)
 
 	// 3. Invalid Direction Catch
 	return -1;
+}
+
+void MoveGen::addPawnMove(int startPos, int endPos, bool isPromotion, MoveList &list)
+{
+	if (isPromotion)
+	{
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::KNIGHT));
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::BISHOP));
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::ROOK));
+		list.push_back(Move(startPos, endPos, Move::PROMOTION, Move::QUEEN));
+	}
+	else
+	{
+		list.push_back(Move(startPos, endPos));
+	}
 }

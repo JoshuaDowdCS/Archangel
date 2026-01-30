@@ -9,14 +9,16 @@ void Board::makeMove(Move currMove)
 {
 	moveHistory.push_back(currMove);
 	previousMoves.push_back({-1, -1, -1, -1});
+	previousMoves.back().castlingRights = castlingRights;
+	previousMoves.back().passantSquare = passantSquare;
+	previousMoves.back().capturedPiece = getSquareType(currMove.getTo()) | (isSquareWhite(currMove.getTo()) ? Piece::WHITE : Piece::BLACK);
+
 	passantSquare = -1;
 
 	Bitboard fromBit = 1ULL << currMove.getFrom();
 	Bitboard toBit = 1ULL << currMove.getTo();
 	int fromType = getSquareType(currMove.getFrom());
 	int toType = getSquareType(currMove.getTo());
-
-	previousMoves.back().capturedPiece = getSquareType(currMove.getTo()) | (isSquareWhite(currMove.getTo()) ? Piece::WHITE : Piece::BLACK);
 
 	if ((fromType == Piece::ROOK || fromType == Piece::KING))
 	{
@@ -49,15 +51,12 @@ void Board::makeMove(Move currMove)
 
 	bitboards[0][0] = 0;
 	bitboards[1][0] = 0;
-	for (int t = 1; t <= 6; t++)
+	for (int t = Piece::PAWN; t <= Piece::KING; t++)
 	{
 		bitboards[0][0] |= bitboards[0][t]; // White combined
 		bitboards[1][0] |= bitboards[1][t]; // Black combined
 	}
 	allCombined = bitboards[0][0] | bitboards[1][0];
-
-	previousMoves.back().castlingRights = castlingRights;
-	previousMoves.back().passantSquare = passantSquare;
 
 	isWhiteTurn = !isWhiteTurn;
 	fullmoveCounter += (int)isWhiteTurn;
@@ -227,6 +226,8 @@ void Board::pawnMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit,
 void Board::unmakeMove()
 {
 	isWhiteTurn = !isWhiteTurn;
+	castlingRights = previousMoves.back().castlingRights;
+	passantSquare = previousMoves.back().passantSquare;
 
 	Move currMove = moveHistory.back();
 	moveHistory.pop_back();
@@ -294,16 +295,12 @@ void Board::unmakeMove()
 
 	bitboards[0][0] = 0;
 	bitboards[1][0] = 0;
-	for (int t = 1; t <= 6; t++)
+	for (int t = Piece::PAWN; t <= Piece::KING; t++)
 	{
 		bitboards[0][0] |= bitboards[0][t]; // White combined
 		bitboards[1][0] |= bitboards[1][t]; // Black combined
 	}
 	allCombined = bitboards[0][0] | bitboards[1][0];
-
-	// Reset pesky variables
-	castlingRights = previousMoves.back().castlingRights;
-	passantSquare = previousMoves.back().passantSquare;
 
 	previousMoves.pop_back();
 }

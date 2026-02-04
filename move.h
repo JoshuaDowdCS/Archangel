@@ -10,13 +10,11 @@ struct Move
     static const uint16_t FROM_MASK = 0b0000000000111111;
     static const uint16_t TO_MASK = 0b0000111111000000;
 
-    // Flags to know if a move type is special or not
     static const uint16_t FLAG_MASK = 0b0011000000000000;
     static const uint16_t CASTLING = 0b0001000000000000;
     static const uint16_t PASSANT = 0b0010000000000000;
     static const uint16_t PROMOTION = 0b0011000000000000;
 
-    // Flags to say what piece we're promoting to
     static const uint16_t PROMOTION_MASK = 0b1100000000000000;
     static const uint16_t KNIGHT = 0b0000000000000000;
     static const uint16_t BISHOP = 0b0100000000000000;
@@ -38,6 +36,7 @@ public:
     int getPromotion() const { return data & PROMOTION_MASK; }
     bool isSpecial() const { return (data & FLAG_MASK) != 0; }
 
+    int getType() const { return (data & FLAG_MASK) >> 12; }
     bool isPromotion() const { return (data & FLAG_MASK) == PROMOTION; }
     bool isCastling() const { return (data & FLAG_MASK) == CASTLING; }
     bool isPassant() const { return (data & FLAG_MASK) == PASSANT; }

@@ -1,24 +1,33 @@
 #pragma once
 
 #include "move.h"
-#include <assert.h> // For bounds checking in debug mode
+#include <iostream>
+#include <assert.h>
 
 struct MoveList
 {
         Move moveList[256];
         int count = 0;
 
-        // Overload [] for access and modification
         Move &operator[](int i)
         {
-                assert(i >= 0 && i < count); // Optional: ensures you don't access uninitialized moves
+                if (i < 0 || i >= count)
+                {
+
+                        std::cerr << "Error: MoveList index " << i << " out of bounds (count: " << count << ")" << std::endl;
+                        return moveList[0];
+                }
                 return moveList[i];
         }
 
-        // Overload [] for read-only access
         const Move &operator[](int i) const
         {
-                assert(i >= 0 && i < count);
+                if (i < 0 || i >= count)
+                {
+
+                        std::cerr << "Error: MoveList index " << i << " out of bounds (count: " << count << ")" << std::endl;
+                        return moveList[0];
+                }
                 return moveList[i];
         }
 
@@ -29,10 +38,15 @@ struct MoveList
 
         void erase(int i)
         {
-                assert(i >= 0 && i < count);
-                // Replace current move with the one at the end of the list
+                if (i < 0 || i >= count)
+                {
+
+                        std::cerr << "Error: MoveList index " << i << " out of bounds (count: " << count << ")" << std::endl;
+                        return;
+                }
+
                 moveList[i] = moveList[count - 1];
-                // Shrink the count
+
                 count--;
         }
 

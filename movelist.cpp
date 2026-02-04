@@ -20,7 +20,6 @@ void MoveList::printMoveList()
         int from = move.getFrom();
         int to = move.getTo();
 
-        // Convert square indices to algebraic notation (0-63 -> a1-h8)
         char fromFile = 'a' + (from % 8);
         char fromRank = '1' + (from / 8);
         char toFile = 'a' + (to % 8);
@@ -29,7 +28,6 @@ void MoveList::printMoveList()
         std::cout << std::setw(3) << i + 1 << ". "
                   << fromFile << fromRank << toFile << toRank;
 
-        // Print special move types
         if (move.isPromotion())
         {
             std::cout << "=";

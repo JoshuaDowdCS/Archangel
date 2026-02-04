@@ -1,6 +1,7 @@
 #include "board.h"
 #include "movegen.h"
 #include "search.h"
+#include "evaluatedmove.h"
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -8,7 +9,6 @@
 
 const std::string START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-// Helper to split string by spaces
 std::vector<std::string> split(const std::string &str)
 {
     std::vector<std::string> tokens;
@@ -21,7 +21,7 @@ std::vector<std::string> split(const std::string &str)
 
 int main(int argc, char *argv[])
 {
-    std::setbuf(stdout, NULL); // Critical for GUI communication
+    std::setbuf(stdout, NULL);
 
     Board board(START_FEN);
     std::string line;
@@ -50,24 +50,23 @@ int main(int argc, char *argv[])
         }
         else if (command == "position")
         {
-            // position [startpos | fen] moves ....
+
             size_t moveIndex = 0;
 
             if (tokens[1] == "startpos")
             {
                 board = Board(START_FEN);
-                moveIndex = 2; // "moves" would be at tokens[2]
+                moveIndex = 2;
             }
             else if (tokens[1] == "fen")
             {
-                // FENs are 6 tokens long. Reconstruct it.
+
                 std::string fen = tokens[2] + " " + tokens[3] + " " + tokens[4] + " " +
                                   tokens[5] + " " + tokens[6] + " " + tokens[7];
                 board = Board(fen);
-                moveIndex = 8; // "moves" would be at tokens[8]
+                moveIndex = 8;
             }
 
-            // Apply moves if they exist in the command
             for (size_t i = moveIndex; i < tokens.size(); ++i)
             {
                 if (tokens[i] == "moves")
@@ -78,11 +77,10 @@ int main(int argc, char *argv[])
         }
         else if (command == "go")
         {
-            // Default values
-            int depthLimit = 100;     // Search "forever" unless a limit is found
-            int timeLimit = 99999999; // means no time limit set yet
 
-            // 1. Enhanced Parsing Logic
+            int depthLimit = 10;
+            int timeLimit = 5000;
+
             for (size_t i = 1; i < tokens.size(); i++)
             {
                 if (tokens[i] == "depth" && i + 1 < tokens.size())
@@ -95,7 +93,7 @@ int main(int argc, char *argv[])
                 }
                 else if (tokens[i] == "wtime" && board.isWhiteTurn && i + 1 < tokens.size())
                 {
-                    // Spend 5% of remaining time
+
                     timeLimit = std::stoi(tokens[i + 1]) / 20;
                 }
                 else if (tokens[i] == "btime" && !board.isWhiteTurn && i + 1 < tokens.size())
@@ -104,28 +102,24 @@ int main(int argc, char *argv[])
                 }
             }
 
-            // 2. Execute Search
             auto startTime = std::chrono::steady_clock::now();
             auto stopTime = startTime + std::chrono::milliseconds(timeLimit);
 
-            Search mySearch;
             std::string moveStr = "a1a1";
-            // We search depth by depth (Iterative Deepening)
+            Search mySearch;
 
             for (int d = 1; d <= depthLimit; d++)
             {
                 std::cout << "-----------------" << '\n';
                 std::cout << "STARTING DEPTH " << d << '\n';
                 std::cout << "-----------------" << '\n';
-                double eval = mySearch.alphaBetaMax(board, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), true, stopTime);
+                EvaluatedMove bestMove = mySearch.simpleSearch(board, stopTime, d, true);
 
-                // If the search returned because it ran out of time, don't print this depth
                 if (mySearch.abortSearch)
                     break;
 
-                moveStr = board.moveToString(mySearch.bestMove);
+                moveStr = board.moveToString(bestMove.move);
             }
-            // 4. Final UCI Output
 
             std::cout << "bestmove " << moveStr << '\n';
         }

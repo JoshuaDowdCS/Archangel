@@ -2,9 +2,6 @@
 #include "movelist.h"
 #include "evaluation.h"
 #include "movegen.h"
-#include <iostream>
-#include <random>
-#include <ctime>
 
 EvaluatedMove Search::simpleSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, bool isRoot = false)
 {

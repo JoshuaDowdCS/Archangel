@@ -1,6 +1,6 @@
-#include "board.h"
-#include "search.h"
-#include "evaluatedmove.h"
+#include "movegen/board.h"
+#include "engine/search.h"
+#include "types/evaluatedmove.h"
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -109,18 +109,16 @@ int main(int argc, char *argv[])
 
             for (int d = 1; d <= depthLimit; d++)
             {
-                std::cout << "-----------------" << '\n';
-                std::cout << "STARTING DEPTH " << d << '\n';
-                std::cout << "-----------------" << '\n';
                 EvaluatedMove bestMove = mySearch.simpleSearch(board, stopTime, d, true);
 
                 if (mySearch.abortSearch)
                     break;
 
                 moveStr = board.moveToString(bestMove.move);
-            }
 
-            std::cout << "bestmove " << moveStr << '\n';
+                std::cout << "On depth " << d << " the current favorite Move is: " << moveStr << "\n";
+            }
+            std::cout << "bestmove " << moveStr << "\n";
         }
         else if (command == "quit")
         {

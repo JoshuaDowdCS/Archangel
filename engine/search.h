@@ -1,7 +1,7 @@
 #pragma once
 
-#include "board.h"
-#include "evaluatedmove.h"
+#include "../movegen/board.h"
+#include "../types/evaluatedmove.h"
 
 class Search
 {

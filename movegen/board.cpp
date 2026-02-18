@@ -1,6 +1,6 @@
 #include "board.h"
-#include "piece.h"
-#include "movegen.h"
+#include "../types/piece.h"
+#include "../movegen/movegen.h"
 #include <cstddef>
 #include <iostream>
 #include <iomanip>

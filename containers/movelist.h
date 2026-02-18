@@ -1,6 +1,6 @@
 #pragma once
 
-#include "move.h"
+#include "../types/move.h"
 #include <iostream>
 #include <assert.h>
 

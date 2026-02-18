@@ -1,9 +1,9 @@
 #ifndef MOVEGEN_H
 #define MOVEGEN_H
 
-#include "movelist.h"
-#include "piece.h"
-#include "types.h"
+#include "../containers/movelist.h"
+#include "../types/piece.h"
+#include "../types/types.h"
 
 class Board;
 

@@ -2,10 +2,10 @@
 
 #include <string>
 #include <vector>
-#include "move.h"
-#include "movelist.h"
-#include "boardstate.h"
-#include "types.h"
+#include "../types/move.h"
+#include "../containers/movelist.h"
+#include "../types/boardstate.h"
+#include "../types/types.h"
 
 class Board
 {

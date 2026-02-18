@@ -1,5 +1,5 @@
 #include "board.h"
-#include "movegen.h"
+#include "movegen/movegen.h"
 #include <sstream>
 #include <iostream>
 #include <string>

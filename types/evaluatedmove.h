@@ -1,5 +1,5 @@
 #pragma once
-#include "move.h"
+#include "../types/move.h"
 struct EvaluatedMove
 {
         Move move;

@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         else if (command == "go")
         {
 
-            int depthLimit = 10;
+            int depthLimit = 100;
             int timeLimit = 5000;
 
             for (size_t i = 1; i < tokens.size(); i++)
@@ -109,12 +109,12 @@ int main(int argc, char *argv[])
 
             for (int d = 1; d <= depthLimit; d++)
             {
-                EvaluatedMove bestMove = mySearch.simpleSearch(board, stopTime, d, true);
+                EvaluatedMove bestMove = mySearch.alphaBetaSearch(board, stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), true, true);
 
                 if (mySearch.abortSearch)
                     break;
 
-                moveStr = board.moveToString(bestMove.move);
+                moveStr = board.moveToString(bestMove.move) == "a1a1" ? moveStr : board.moveToString(bestMove.move);
 
                 std::cout << "On depth " << d << " the current favorite Move is: " << moveStr << "\n";
             }

@@ -249,6 +249,7 @@ void Board::printChessBoard()
 	}
 	std::cout << "\n   a b c d e f g h\n";
 
+	/* Prints out bitboards
 	std::cout << (uint64_t)allCombined << std::endl;
 	for (int i = 0; i <= Piece::KING; i++)
 	{
@@ -258,6 +259,7 @@ void Board::printChessBoard()
 	{
 		std::cout << (uint64_t)bitboards[1][i] << " - " << (int)i << std::endl;
 	}
+	*/
 }
 
 Board::Board(std::string fenString)

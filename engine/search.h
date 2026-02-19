@@ -8,5 +8,5 @@ class Search
 public:
         bool abortSearch = false;
 
-        EvaluatedMove simpleSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, bool isRoot);
+        EvaluatedMove alphaBetaSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, bool isRoot);
 };

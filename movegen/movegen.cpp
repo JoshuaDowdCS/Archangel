@@ -288,7 +288,7 @@ void MoveGen::kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &lis
 
 bool MoveGen::isAttacked(Board &board, int targetSquare)
 {
-	return pawnAttacks(board, targetSquare) || knightAttacks(board, targetSquare) || bishopAttacks(board, targetSquare) || rookAttacks(board, targetSquare);
+	return pawnAttacks(board, targetSquare) || knightAttacks(board, targetSquare) || bishopAttacks(board, targetSquare) || rookAttacks(board, targetSquare) || kingAttacks(board, targetSquare);
 }
 
 bool MoveGen::pawnAttacks(Board &board, int targetSquare)
@@ -373,6 +373,22 @@ bool MoveGen::rookAttacks(Board &board, int targetSquare)
 			{
 				break;
 			}
+		}
+	}
+
+	return false;
+}
+
+bool MoveGen::kingAttacks(Board &board, int targetSquare)
+{
+	Bitboard *opponentPieces = !board.isWhiteTurn ? board.bitboards[1] : board.bitboards[0];
+
+	for (int i = 0; i < 8 && kingMoves[targetSquare][i] != 255; i++)
+	{
+		int endPos = kingMoves[targetSquare][i];
+		if ((opponentPieces[Piece::KING] & (1ULL << endPos)) != 0)
+		{
+			return true;
 		}
 	}
 

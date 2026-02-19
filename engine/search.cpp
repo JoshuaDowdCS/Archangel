@@ -4,7 +4,7 @@
 #include "../types/evaluatedmove.h"
 #include "../movegen/movegen.h"
 
-EvaluatedMove Search::simpleSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, bool isRoot = false)
+EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, bool isRoot = false)
 {
         if (std::chrono::steady_clock::now() > stopTime)
         {
@@ -22,27 +22,66 @@ EvaluatedMove Search::simpleSearch(Board &board, std::chrono::steady_clock::time
 
         if (!moveList.count)
         {
-                return {Move(0, 0), -std::numeric_limits<double>::max() * board.isKingAttacked(board.isWhiteTurn)};
+                return {Move(0, 0), (maximizingPlayer ? -1 : 1) * std::numeric_limits<double>::max() * board.isKingAttacked(board.isWhiteTurn)};
         }
 
-        double bestEvaluation = -std::numeric_limits<double>::max();
-        Move bestMove = Move(0, 0);
+        EvaluatedMove returner = {Move(0, 0), 0};
 
-        for (Move move : moveList)
+        if (maximizingPlayer)
         {
-                board.makeMove(move);
-                double evaluation = -simpleSearch(board, stopTime, depth - 1).evaluation;
-                board.unmakeMove();
+                returner.evaluation = -std::numeric_limits<double>::max();
 
-                if (evaluation > bestEvaluation)
+                for (Move move : moveList)
                 {
-                        if (isRoot)
-                        {
-                                bestMove = move;
-                        }
-                        bestEvaluation = evaluation;
-                }
-        }
+                        board.makeMove(move);
+                        double currEval = alphaBetaSearch(board, stopTime, depth - 1, alpha, beta, false).evaluation;
+                        board.unmakeMove();
 
-        return {bestMove, bestEvaluation};
+                        if (abortSearch)
+                                break;
+
+                        if (currEval > returner.evaluation)
+                        {
+                                returner.evaluation = currEval;
+                                if (isRoot)
+                                {
+                                        returner.move = move;
+                                }
+                        }
+
+                        alpha = std::max(alpha, currEval);
+
+                        if (beta <= alpha)
+                        {
+                                break;
+                        }
+                }
+
+                return returner;
+        }
+        else
+        {
+                returner.evaluation = std::numeric_limits<double>::max();
+
+                for (Move move : moveList)
+                {
+                        board.makeMove(move);
+                        double currEval = alphaBetaSearch(board, stopTime, depth - 1, alpha, beta, true).evaluation;
+                        board.unmakeMove();
+
+                        if (abortSearch)
+                                break;
+
+                        returner.evaluation = std::min(returner.evaluation, currEval);
+
+                        beta = std::min(beta, currEval);
+
+                        if (beta <= alpha)
+                        {
+                                break;
+                        }
+                }
+
+                return returner;
+        }
 }

@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 
             for (int d = 1; d <= depthLimit; d++)
             {
-                EvaluatedMove bestMove = mySearch.alphaBetaSearch(board, stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), true, true);
+                EvaluatedMove bestMove = mySearch.alphaBetaSearch(board, stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), board.isWhiteTurn, true);
 
                 if (mySearch.abortSearch)
                     break;

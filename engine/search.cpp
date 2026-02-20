@@ -72,7 +72,14 @@ EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::t
                         if (abortSearch)
                                 break;
 
-                        returner.evaluation = std::min(returner.evaluation, currEval);
+                        if (currEval < returner.evaluation)
+                        {
+                                returner.evaluation = currEval;
+                                if (isRoot)
+                                {
+                                        returner.move = move;
+                                }
+                        }
 
                         beta = std::min(beta, currEval);
 

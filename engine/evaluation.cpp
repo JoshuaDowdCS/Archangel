@@ -15,20 +15,7 @@ double Evaluation::materialCount(Board &board, bool forWhite)
         return material;
 }
 
-#include <random>
-#include <ctime>
-
 double Evaluation::evaluate(Board &board)
 {
-        static std::mt19937 generator(static_cast<unsigned>(std::time(nullptr)));
-
-        std::uniform_real_distribution<double> distribution(-1, 1);
-        double jiggle = distribution(generator);
-
-        double whiteMaterial = materialCount(board, true);
-        double blackMaterial = materialCount(board, false);
-
-        double relativeScore = whiteMaterial - blackMaterial;
-
-        return (board.isWhiteTurn ? relativeScore : -relativeScore) + jiggle;
+        return materialCount(board, true) - materialCount(board, false);
 }

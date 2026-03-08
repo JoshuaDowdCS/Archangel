@@ -13,6 +13,13 @@ uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 
 	if (depth == 1)
 	{
+		for (Move move : list)
+		{
+			if (isRoot)
+			{
+				std::cout << board.moveToString(move) << " 1" << std::endl;
+			}
+		}
 		return list.count;
 	}
 
@@ -28,6 +35,7 @@ uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 			std::cout << board.moveToString(move) << " " << branchNodes << std::endl;
 		}
 	}
+
 	return totalNodes;
 }
 

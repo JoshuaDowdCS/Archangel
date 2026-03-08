@@ -85,19 +85,22 @@ int main(int argc, char *argv[])
                 if (tokens[i] == "depth" && i + 1 < tokens.size())
                 {
                     depthLimit = std::stoi(tokens[i + 1]);
+                    timeLimit = std::numeric_limits<int>::max();
                 }
                 else if (tokens[i] == "movetime" && i + 1 < tokens.size())
                 {
                     timeLimit = std::stoi(tokens[i + 1]);
+                    depthLimit = std::numeric_limits<int>::max();
                 }
                 else if (tokens[i] == "wtime" && board.isWhiteTurn && i + 1 < tokens.size())
                 {
-
                     timeLimit = std::stoi(tokens[i + 1]) / 20;
+                    depthLimit = std::numeric_limits<int>::max();
                 }
                 else if (tokens[i] == "btime" && !board.isWhiteTurn && i + 1 < tokens.size())
                 {
                     timeLimit = std::stoi(tokens[i + 1]) / 20;
+                    depthLimit = std::numeric_limits<int>::max();
                 }
             }
 

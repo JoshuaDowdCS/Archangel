@@ -95,6 +95,8 @@ void Board::rookKingMove(int fromType, int toType, Bitboard fromBit, Bitboard to
 		return;
 	}
 
+	hasCastled[!isWhiteTurn] = true;
+
 	bitboards[!isWhiteTurn][Piece::KING] = 1ULL << currMove.getTo();
 
 	bitboards[!isWhiteTurn][Piece::ROOK] ^= castleRookMasks[currMove.getTo()];

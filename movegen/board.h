@@ -15,7 +15,8 @@ public:
 
     Bitboard bitboards[2][8]; // 0 is empty, 1-6 holds piece type, 7 is combined. White is 0, 1 is black
     Bitboard allCombined;
-    int castlingRights; // stored as 0bXXXX. 1000 is white short, 0100 is WL, 0010 is BS, and 0001 is BL
+    int castlingRights;                  // stored as 0bXXXX. 1000 is white short, 0100 is WL, 0010 is BS, and 0001 is BL
+    bool hasCastled[2] = {false, false}; // White is 0, 1 is black
     int passantSquare;
     int halfmoveClock;
     bool isWhiteTurn;

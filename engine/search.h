@@ -2,6 +2,7 @@
 
 #include "../movegen/board.h"
 #include "../types/evaluatedmove.h"
+#include "../containers/movelist.h"
 
 class Search
 {

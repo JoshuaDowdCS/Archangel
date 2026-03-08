@@ -1,5 +1,5 @@
-#include "board.h"
-#include "movegen/movegen.h"
+#include "./movegen/board.h"
+#include "./movegen/movegen.h"
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
         int duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-        std::cout << totalNodes / (duration / (float)1000) << " Moves Per Second" << std::endl;
+        // std::cout << totalNodes / (duration / (float)1000) << " Moves Per Second" << std::endl;
 
         std::cout << "\n"
                   << totalNodes << std::endl;

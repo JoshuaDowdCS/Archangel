@@ -110,8 +110,6 @@ int main(int argc, char *argv[])
             std::string moveStr = "a1a1";
             Search mySearch;
 
-            board.printChessBoard();
-
             for (int d = 1; d <= depthLimit; d++)
             {
                 std::vector<Move> moveLine;

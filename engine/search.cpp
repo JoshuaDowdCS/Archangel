@@ -4,7 +4,7 @@
 #include "../types/evaluatedmove.h"
 #include "../movegen/movegen.h"
 
-EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, bool isRoot = false)
+EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move> &moveLine, bool isRoot)
 {
         if (std::chrono::steady_clock::now() > stopTime)
         {
@@ -20,75 +20,54 @@ EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::t
         MoveList moveList;
         MoveGen::generateMoves(board, moveList);
 
+        double playerExtreme = (maximizingPlayer ? -1 : 1) * 1000000000;
+
         if (!moveList.count)
         {
-                return {Move(0, 0), (maximizingPlayer ? -1 : 1) * std::numeric_limits<double>::max() * board.isKingAttacked(board.isWhiteTurn)};
+                if (!board.isKingAttacked(board.isWhiteTurn))
+                        return {Move(0, 0), 0};
+
+                return {Move(0, 0), playerExtreme - (playerExtreme / 100) * depth};
         }
 
-        EvaluatedMove returner = {Move(0, 0), 0};
+        EvaluatedMove returner = {Move(0, 0), playerExtreme};
 
-        if (maximizingPlayer)
+        for (Move move : moveList)
         {
-                returner.evaluation = -std::numeric_limits<double>::max();
+                std::vector<Move> localMoveLine;
 
-                for (Move move : moveList)
+                board.makeMove(move);
+                double currEval = alphaBetaSearch(board, stopTime, depth - 1, alpha, beta, !maximizingPlayer, localMoveLine).evaluation;
+                board.unmakeMove();
+
+                if (abortSearch)
                 {
-                        board.makeMove(move);
-                        double currEval = alphaBetaSearch(board, stopTime, depth - 1, alpha, beta, false).evaluation;
-                        board.unmakeMove();
-
-                        if (abortSearch)
-                                break;
-
-                        if (currEval > returner.evaluation)
-                        {
-                                returner.evaluation = currEval;
-                                if (isRoot)
-                                {
-                                        returner.move = move;
-                                }
-                        }
-
-                        alpha = std::max(alpha, currEval);
-
-                        if (beta <= alpha)
-                        {
-                                break;
-                        }
+                        break;
                 }
 
-                return returner;
-        }
-        else
-        {
-                returner.evaluation = std::numeric_limits<double>::max();
-
-                for (Move move : moveList)
+                if (maximizingPlayer ? currEval > returner.evaluation : currEval < returner.evaluation)
                 {
-                        board.makeMove(move);
-                        double currEval = alphaBetaSearch(board, stopTime, depth - 1, alpha, beta, true).evaluation;
-                        board.unmakeMove();
-
-                        if (abortSearch)
-                                break;
-
-                        if (currEval < returner.evaluation)
+                        returner.evaluation = currEval;
+                        if (isRoot)
                         {
-                                returner.evaluation = currEval;
-                                if (isRoot)
-                                {
-                                        returner.move = move;
-                                }
+                                returner.move = move;
                         }
 
+                        moveLine.clear();
+                        moveLine.push_back(move);
+                        moveLine.insert(moveLine.end(), localMoveLine.begin(), localMoveLine.end());
+                }
+
+                if (maximizingPlayer)
+                        alpha = std::max(alpha, currEval);
+                else
                         beta = std::min(beta, currEval);
 
-                        if (beta <= alpha)
-                        {
-                                break;
-                        }
+                if (beta <= alpha)
+                {
+                        break;
                 }
-
-                return returner;
         }
+
+        return returner;
 }

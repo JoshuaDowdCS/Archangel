@@ -1,6 +1,7 @@
 
 #include "evaluation.h"
 #include "../types/piece.h"
+#include "../movegen/movegen.h"
 
 double Evaluation::evaluate(Board &board)
 {
@@ -12,7 +13,11 @@ double Evaluation::evaluate(Board &board)
 
         evaluation += pieceSquareEvaluation(board);
 
-        return board.isWhiteTurn ? evaluation : -evaluation;
+        evaluation += opponentKingMobility(board, evaluation);
+
+        return board.isWhiteTurn
+                   ? evaluation
+                   : -evaluation;
 }
 
 double Evaluation::materialCount(Board &board, bool forWhite)
@@ -65,4 +70,14 @@ double Evaluation::pieceSquareEvaluation(Board &board)
         }
 
         return evaluation;
+}
+
+double Evaluation::opponentKingMobility(Board &board, double currEval)
+{
+        int kingFile = std::countr_zero(board.bitboards[board.isWhiteTurn][Piece::KING]) % 8;
+        int kingRank = std::countr_zero(board.bitboards[board.isWhiteTurn][Piece::KING]) / 8;
+
+        int distFromCenter = std::max(std::abs(kingFile - 4), std::abs(kingFile - 3)) + std::max(std::abs(kingRank - 4), std::abs(kingRank - 3));
+
+        return distFromCenter * 10;
 }

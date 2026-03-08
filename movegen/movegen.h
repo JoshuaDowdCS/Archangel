@@ -155,12 +155,13 @@ public:
     static void addPawnMove(int startPos, int endPos, bool isPromotio, MoveList &list);
     static bool isAttacked(Board &board, int targetSquare);
 
+    static void kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+
 private:
     static void pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
     static void knightGen(Board &board, int startPos, MoveList &list);
     static void bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
     static void rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
-    static void kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
 
     static bool pawnAttacks(Board &board, int targetSquare);
     static bool knightAttacks(Board &board, int targetSquare);

@@ -509,9 +509,14 @@ std::string Board::moveToString(Move move)
 
 bool Board::isKingAttacked(bool isWhiteKing)
 {
-	Bitboard friendlyKing = isWhiteTurn ? bitboards[0][Piece::KING] : bitboards[1][Piece::KING];
+	Bitboard friendlyKing = bitboards[!isWhiteKing][Piece::KING];
 
-	return MoveGen::isAttacked(*this, std::countr_zero(friendlyKing));
+	bool originalTurnColor = isWhiteTurn;
+	isWhiteTurn = !isWhiteKing;
+	bool attacked = MoveGen::isAttacked(*this, std::countr_zero(friendlyKing));
+	isWhiteTurn = originalTurnColor;
+
+	return attacked;
 }
 
 void Board::printMoveHistory()

@@ -112,14 +112,26 @@ int main(int argc, char *argv[])
 
             for (int d = 1; d <= depthLimit; d++)
             {
-                EvaluatedMove bestMove = mySearch.alphaBetaSearch(board, stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), board.isWhiteTurn, true);
+                std::vector<Move> moveLine;
+
+                EvaluatedMove bestMove = mySearch.alphaBetaSearch(board, stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), board.isWhiteTurn, moveLine, true);
 
                 if (mySearch.abortSearch)
                     break;
 
                 moveStr = board.moveToString(bestMove.move) == "a1a1" ? moveStr : board.moveToString(bestMove.move);
 
-                std::cout << "On depth " << d << " the current favorite Move is: " << moveStr << "\n";
+                std::cout << "On depth " << d << " the current favorite Move is: " << moveStr << " with a score of: " << bestMove.evaluation << " ";
+
+                for (Move currMove : moveLine)
+                    std::cout << board.moveToString(currMove) << " ";
+
+                std::cout << std::endl;
+
+                if (std::abs(bestMove.evaluation) > 1000000)
+                {
+                    break;
+                }
             }
             std::cout << "bestmove " << moveStr << "\n";
         }

@@ -18,6 +18,7 @@ public:
     int castlingRights;                  // stored as 0bXXXX. 1000 is white short, 0100 is WL, 0010 is BS, and 0001 is BL
     bool hasCastled[2] = {false, false}; // White is 0, 1 is black
     int passantSquare;
+    bool resetPassantSquare;
     int halfmoveClock;
     bool isWhiteTurn;
     int fullmoveCounter;

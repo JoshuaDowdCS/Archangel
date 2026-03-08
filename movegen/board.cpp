@@ -14,8 +14,6 @@ void Board::makeMove(Move currMove)
 				 castlingRights,
 				 currMove.getType()});
 
-	passantSquare = -1;
-
 	Bitboard fromBit = 1ULL << currMove.getFrom();
 	Bitboard toBit = 1ULL << currMove.getTo();
 	int fromType = getSquareType(currMove.getFrom());
@@ -33,6 +31,10 @@ void Board::makeMove(Move currMove)
 	{
 		normalMove(fromType, toType, fromBit, toBit, currMove);
 	}
+
+	passantSquare = resetPassantSquare ? -1 : passantSquare;
+
+	resetPassantSquare = true;
 
 	castlingRights &= toBit == (1ULL << 7) ? 0b0111 : 0b1111;
 	castlingRights &= toBit == (1ULL << 0) ? 0b1011 : 0b1111;
@@ -104,7 +106,7 @@ void Board::rookKingMove(int fromType, int toType, Bitboard fromBit, Bitboard to
 
 void Board::pawnMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit, Move currMove)
 {
-	if (currMove.isPassant())
+	if (currMove.getTo() == passantSquare)
 	{
 		bitboards[!isWhiteTurn][Piece::PAWN] ^= fromBit;
 
@@ -125,7 +127,9 @@ void Board::pawnMove(int fromType, int toType, Bitboard fromBit, Bitboard toBit,
 
 		if (std::abs((currMove.getTo() / 8) - (currMove.getFrom() / 8)) == 2)
 		{
+
 			passantSquare = isWhiteTurn ? currMove.getTo() - 8 : currMove.getTo() + 8;
+			resetPassantSquare = false;
 		}
 
 		normalMove(fromType, toType, fromBit, toBit, currMove);

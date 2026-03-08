@@ -110,6 +110,8 @@ int main(int argc, char *argv[])
             std::string moveStr = "a1a1";
             Search mySearch;
 
+            board.printChessBoard();
+
             for (int d = 1; d <= depthLimit; d++)
             {
                 std::vector<Move> moveLine;
@@ -124,7 +126,8 @@ int main(int argc, char *argv[])
                 std::cout << "On depth " << d << " the current favorite Move is: " << moveStr << " with a score of: " << bestMove.evaluation << " ";
 
                 for (Move currMove : moveLine)
-                    std::cout << board.moveToString(currMove) << " ";
+                    std::cout
+                        << board.moveToString(currMove) << " ";
 
                 std::cout << std::endl;
 

@@ -52,7 +52,7 @@ double Evaluation::doubledPawns(Board &board)
 
 double Evaluation::isCastled(Board &board)
 {
-        return board.hasCastled[!board.isWhiteTurn] * castledWeight;
+        return board.hasCastled[!board.isWhiteTurn] * 50;
 }
 
 double Evaluation::pieceSquareEvaluation(Board &board)

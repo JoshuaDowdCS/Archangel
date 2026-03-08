@@ -152,6 +152,8 @@ void Board::unmakeMove()
 	}
 	else if (previousMoves.back().moveType == 1)
 	{
+		hasCastled[!isWhiteTurn] = false;
+
 		bitboards[!isWhiteTurn][Piece::KING] = 1ULL << currMove.getFrom();
 
 		bitboards[!isWhiteTurn][Piece::ROOK] ^= castleRookMasks[currMove.getTo()];

@@ -9,7 +9,6 @@ class Board;
 
 class MoveGen
 {
-
     static inline constexpr int directions[8] = {-1, 1, -8, 8, -7, 7, -9, 9};
 
     static inline constexpr int knightMoves[64][8] = {
@@ -149,19 +148,24 @@ class MoveGen
     static constexpr Bitboard blackShortEmpty = 0x6000000000000000ULL;
     static constexpr Bitboard blackLongEmpty = 0x0E00000000000000ULL;
 
+    bool onlyCaptures = false;
+
 public:
-    static uint64_t perft(Board &board, int depth, bool isRoot);
-    static void generateMoves(Board &board, MoveList &list, bool onlyCaptures = false);
+    MoveGen();
+    MoveGen(bool onlyCaptures);
+
+    uint64_t perft(Board &board, int depth, bool isRoot);
+    void generateMoves(Board &board, MoveList &list);
     static void addPawnMove(int startPos, int endPos, bool isPromotio, MoveList &list);
     static bool isAttacked(Board &board, int targetSquare);
 
-    static void kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    void kingGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
 
 private:
-    static void pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
-    static void knightGen(Board &board, int startPos, MoveList &list);
-    static void bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
-    static void rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    void pawnGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    void knightGen(Board &board, int startPos, MoveList &list);
+    void bishopGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
+    void rookGen(Board &board, int startPos, Bitboard bitPos, MoveList &list);
 
     static bool pawnAttacks(Board &board, int targetSquare);
     static bool knightAttacks(Board &board, int targetSquare);
@@ -170,8 +174,7 @@ private:
     static bool kingAttacks(Board &board, int targetSquare);
 
     static bool kingIsAttacked(Board &board, int targetSquare);
-    static bool noMoveIsAttacked(Board &board, Move testMove, int targetSquare);
-    static bool tryMove(Board &board, Move testMove, int kingSquare = 255);
+    bool tryMove(Board &board, Move testMove, int kingSquare = 255);
     static int disToEdge(int startPos, int direction);
 };
 

@@ -25,7 +25,8 @@ int main(int argc, char *argv[])
                 }
         }
 
-        uint64_t totalNodes = MoveGen::perft(testBoard, depth, true);
+        MoveGen moveGenerator;
+        uint64_t totalNodes = moveGenerator.perft(testBoard, depth, true);
 
         auto end = std::chrono::steady_clock::now();
 

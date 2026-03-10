@@ -5,6 +5,12 @@
 #include <iostream>
 #include <chrono>
 
+MoveGen::MoveGen()
+{
+}
+
+MoveGen::MoveGen(bool onlyCaptures) : onlyCaptures(onlyCaptures) {}
+
 uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 {
 	MoveList list;
@@ -39,7 +45,7 @@ uint64_t MoveGen::perft(Board &board, int depth, bool isRoot)
 	return totalNodes;
 }
 
-void MoveGen::generateMoves(Board &board, MoveList &list, bool onlyCaptures)
+void MoveGen::generateMoves(Board &board, MoveList &list)
 {
 
 	Bitboard *friendlyPieces = board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
@@ -482,6 +488,10 @@ bool MoveGen::tryMove(Board &board, Move testMove, int kingSquare)
 	Bitboard friendlyKing = (kingSquare == 255) ? board.bitboards[!board.isWhiteTurn][Piece::KING] : 1ULL << kingSquare;
 
 	board.makeMove(testMove);
+
+	if (onlyCaptures)
+	{
+	}
 
 	bool legal = !isAttacked(board, std::countr_zero(friendlyKing));
 

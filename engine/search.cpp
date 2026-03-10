@@ -20,7 +20,8 @@ EvaluatedMove Search::alphaBetaSearch(std::chrono::steady_clock::time_point stop
         }
 
         MoveList moveList;
-        MoveGen::generateMoves(board, moveList);
+        MoveGen moveGenerator;
+        moveGenerator.generateMoves(board, moveList);
 
         double playerExtreme = (maximizingPlayer ? -1 : 1) * 1000000000;
 
@@ -87,7 +88,8 @@ double Search::Quiesce(int alpha, int beta)
                 alpha = best_value;
 
         MoveList captureList;
-        MoveGen::generateMoves(board, captureList, true);
+        MoveGen moveGenerator(true);
+        moveGenerator.generateMoves(board, captureList);
 
         for (Move captureMove : captureList)
         {

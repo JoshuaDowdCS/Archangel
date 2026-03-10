@@ -4,7 +4,9 @@
 #include "../types/evaluatedmove.h"
 #include "../movegen/movegen.h"
 
-EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move> &moveLine, bool isRoot)
+Search::Search(Board &board) : board(board) {}
+
+EvaluatedMove Search::alphaBetaSearch(std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move> &moveLine, bool isRoot)
 {
         if (std::chrono::steady_clock::now() > stopTime)
         {
@@ -37,7 +39,7 @@ EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::t
                 std::vector<Move> localMoveLine;
 
                 board.makeMove(move);
-                double currEval = alphaBetaSearch(board, stopTime, depth - 1, alpha, beta, !maximizingPlayer, localMoveLine).evaluation;
+                double currEval = alphaBetaSearch(stopTime, depth - 1, alpha, beta, !maximizingPlayer, localMoveLine).evaluation;
                 board.unmakeMove();
 
                 if (abortSearch)
@@ -70,4 +72,36 @@ EvaluatedMove Search::alphaBetaSearch(Board &board, std::chrono::steady_clock::t
         }
 
         return returner;
+}
+
+double Search::Quiesce(int alpha, int beta)
+{
+        double static_eval = Evaluation::evaluate(board);
+
+        // Stand Pat
+        double best_value = static_eval;
+
+        if (best_value >= beta)
+                return best_value;
+        if (best_value > alpha)
+                alpha = best_value;
+
+        MoveList captureList;
+        MoveGen::generateMoves(board, captureList, true);
+
+        for (Move captureMove : captureList)
+        {
+                board.makeMove(captureMove);
+                double score = -Quiesce(-beta, -alpha);
+                board.unmakeMove();
+
+                if (score >= beta)
+                        return score;
+                if (score > best_value)
+                        best_value = score;
+                if (score > alpha)
+                        alpha = score;
+        }
+
+        return best_value;
 }

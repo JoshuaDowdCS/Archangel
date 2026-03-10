@@ -108,13 +108,13 @@ int main(int argc, char *argv[])
             auto stopTime = startTime + std::chrono::milliseconds(timeLimit);
 
             std::string moveStr = "a1a1";
-            Search mySearch;
+            Search mySearch = Search(board);
 
             for (int d = 1; d <= depthLimit; d++)
             {
                 std::vector<Move> moveLine;
 
-                EvaluatedMove bestMove = mySearch.alphaBetaSearch(board, stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), board.isWhiteTurn, moveLine, true);
+                EvaluatedMove bestMove = mySearch.alphaBetaSearch(stopTime, d, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), board.isWhiteTurn, moveLine, true);
 
                 if (mySearch.abortSearch)
                     break;

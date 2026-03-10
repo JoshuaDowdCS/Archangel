@@ -10,6 +10,11 @@ class Search
 public:
         bool abortSearch = false;
         bool foundMate = false;
+        Board board;
 
-        EvaluatedMove alphaBetaSearch(Board &board, std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move> &moveLine, bool isRoot = false);
+        Search(Board &board);
+
+        EvaluatedMove alphaBetaSearch(std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move> &moveLine, bool isRoot = false);
+
+        double Quiesce(int alpha, int beta);
 };

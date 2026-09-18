@@ -8,7 +8,7 @@ clang++ -std=c++20 -O3 -ffast-math \
 -Xpreprocessor -fopenmp \
 -I/opt/homebrew/opt/libomp/include \
 -L/opt/homebrew/opt/libomp/lib -lomp \
-$SOURCES -o RENAME-ME.bin
+$SOURCES -o archangel.bin
 
 # Clear the ignore rule
 unset GLOBIGNORE

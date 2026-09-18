@@ -8,6 +8,22 @@ The project includes:
 - Bitboard-based board representation and move generation
 - Alpha-beta search with iterative deepening and a handcrafted evaluation function
 
+## Status
+
+Goal: a stable 1600 rating on Lichess.
+
+Done:
+- Legal move generation on bitboards, including castling, en passant, pins, and checks, validated with the perft harness
+- UCI loop with `depth`, `movetime`, and clock-based time control
+- Alpha-beta with iterative deepening and a time cutoff
+- Evaluation from material, piece-square tables, pawn structure, castling rights, and king position
+
+Next, when development resumes (the project is paused at the moment):
+- Quiescence search, so the evaluation follows capture sequences to the end instead of stopping mid-exchange
+- Move ordering (MVV-LVA, killer moves) to make the deeper search affordable
+- A transposition table
+- A Lichess bot account for rated games
+
 ## Project Structure
 
 - `main.cpp`: UCI loop and search entrypoint
@@ -39,12 +55,7 @@ cd scripts
 ./compile.sh
 ```
 
-`compile.sh` outputs a binary named `RENAME-ME.bin` in `scripts/`.
-Rename it to your preferred engine name, for example:
-
-```bash
-mv RENAME-ME.bin archangel.bin
-```
+`compile.sh` outputs `archangel.bin` in `scripts/`.
 
 ### Perft Tester
 

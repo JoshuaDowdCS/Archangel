@@ -1,10 +1,10 @@
 #include "./movegen/board.h"
 #include "./movegen/movegen.h"
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
         auto start = std::chrono::steady_clock::now();
 

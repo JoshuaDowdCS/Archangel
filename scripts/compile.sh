@@ -8,6 +8,7 @@ clang++ -std=c++20 -O3 -ffast-math \
 -Xpreprocessor -fopenmp \
 -I/opt/homebrew/opt/libomp/include \
 -L/opt/homebrew/opt/libomp/lib -lomp \
+-Wno-c99-designator \
 $SOURCES -o RENAME-ME.bin
 
 # Clear the ignore rule

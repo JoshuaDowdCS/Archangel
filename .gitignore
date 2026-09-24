@@ -7,3 +7,5 @@ perft-tester.bin.dSYM
 *.bin
 
 /Launch*
+
+config.json

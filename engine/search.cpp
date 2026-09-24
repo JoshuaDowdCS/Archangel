@@ -1,12 +1,12 @@
 #include "search.h"
 #include "../containers/movelist.h"
-#include "evaluation.h"
-#include "../types/evaluatedmove.h"
 #include "../movegen/movegen.h"
+#include "../types/evaluatedmove.h"
+#include "evaluation.h"
 
-Search::Search(Board &board) : board(board) {}
+Search::Search(Board& board) : board(board) {}
 
-EvaluatedMove Search::alphaBetaSearch(std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move> &moveLine, bool isRoot)
+EvaluatedMove Search::alphaBetaSearch(std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move>& moveLine, bool isRoot)
 {
         if (std::chrono::steady_clock::now() > stopTime)
         {

@@ -1,10 +1,16 @@
 
 #include "evaluation.h"
-#include "../types/piece.h"
 #include "../movegen/movegen.h"
+#include "../types/piece.h"
 
-double Evaluation::evaluate(Board &board)
+double Evaluation::evaluate(Board& board)
 {
+
+        if (board.isThreefold())
+        {
+                return 0;
+        }
+
         double evaluation = materialCount(board, board.isWhiteTurn) - materialCount(board, !board.isWhiteTurn);
 
         evaluation += isCastled(board);
@@ -20,7 +26,7 @@ double Evaluation::evaluate(Board &board)
                    : -evaluation;
 }
 
-double Evaluation::materialCount(Board &board, bool forWhite)
+double Evaluation::materialCount(Board& board, bool forWhite)
 {
         double material = 0;
 
@@ -33,7 +39,7 @@ double Evaluation::materialCount(Board &board, bool forWhite)
         return material;
 }
 
-double Evaluation::doubledPawns(Board &board)
+double Evaluation::doubledPawns(Board& board)
 {
         int doubledCount = 0;
         uint64_t pawnBoard = board.bitboards[!board.isWhiteTurn][Piece::PAWN];
@@ -50,12 +56,12 @@ double Evaluation::doubledPawns(Board &board)
         return doubledWeight * doubledCount;
 }
 
-double Evaluation::isCastled(Board &board)
+double Evaluation::isCastled(Board& board)
 {
         return board.hasCastled[!board.isWhiteTurn] * 50;
 }
 
-double Evaluation::pieceSquareEvaluation(Board &board)
+double Evaluation::pieceSquareEvaluation(Board& board)
 {
         double evaluation = 0;
 
@@ -72,7 +78,7 @@ double Evaluation::pieceSquareEvaluation(Board &board)
         return evaluation;
 }
 
-double Evaluation::opponentKingMobility(Board &board, double currEval)
+double Evaluation::opponentKingMobility(Board& board, double currEval)
 {
         int kingFile = std::countr_zero(board.bitboards[board.isWhiteTurn][Piece::KING]) % 8;
         int kingRank = std::countr_zero(board.bitboards[board.isWhiteTurn][Piece::KING]) / 8;

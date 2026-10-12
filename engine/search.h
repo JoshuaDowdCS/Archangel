@@ -1,15 +1,18 @@
 #pragma once
 
-#include "../containers/movelist.h"
 #include "../movegen/board.h"
 #include "../types/evaluatedmove.h"
 #include "../types/move.h"
+
+#include <chrono>
+#include <vector>
 
 class Search
 {
 public:
         bool abortSearch = false;
         bool foundMate = false;
+        uint64_t nodesVisited = 0;
         Board board;
 
         Search(Board& board);

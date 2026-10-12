@@ -1,12 +1,13 @@
-
 #include "evaluation.h"
 #include "../movegen/movegen.h"
 #include "../types/piece.h"
 
+#include <bit>
+
 double Evaluation::evaluate(Board& board)
 {
 
-        if (board.isThreefold())
+        if (board.inThreefold)
         {
                 return 0;
         }

@@ -1,17 +1,18 @@
 #include "search.h"
-#include "../containers/movelist.h"
 #include "../movegen/movegen.h"
 #include "../types/evaluatedmove.h"
 #include "evaluation.h"
+
+#include <chrono>
+#include <vector>
 
 Search::Search(Board& board) : board(board) {}
 
 EvaluatedMove Search::alphaBetaSearch(std::chrono::steady_clock::time_point stopTime, int depth, double alpha, double beta, bool maximizingPlayer, std::vector<Move>& moveLine, bool isRoot)
 {
-        if (std::chrono::steady_clock::now() > stopTime)
+        if ((nodesVisited++ & 65536ULL) == 0 && std::chrono::steady_clock::now() >= stopTime)
         {
                 abortSearch = true;
-                return {Move(0, 0), 0};
         }
 
         if (depth == 0)
@@ -19,13 +20,13 @@ EvaluatedMove Search::alphaBetaSearch(std::chrono::steady_clock::time_point stop
                 return {Move(0, 0), Evaluation::evaluate(board)};
         }
 
-        MoveList moveList;
+        std::vector<Move> moveList;
         MoveGen moveGenerator;
         moveGenerator.generateMoves(board, moveList);
 
         double playerExtreme = (maximizingPlayer ? -1 : 1) * 1000000000;
 
-        if (!moveList.count)
+        if (!moveList.size())
         {
                 if (!board.isKingAttacked(board.isWhiteTurn))
                         return {Move(0, 0), 0};
@@ -87,7 +88,7 @@ double Search::Quiesce(int alpha, int beta)
         if (best_value > alpha)
                 alpha = best_value;
 
-        MoveList captureList;
+        std::vector<Move> captureList;
         MoveGen moveGenerator(true);
         moveGenerator.generateMoves(board, captureList);
 

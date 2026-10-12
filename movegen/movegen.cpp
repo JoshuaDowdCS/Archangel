@@ -3,6 +3,7 @@
 #include <bit>
 #include <chrono>
 #include <iostream>
+#include <vector>
 
 MoveGen::MoveGen()
 {
@@ -12,7 +13,7 @@ MoveGen::MoveGen(bool onlyCaptures) : onlyCaptures(onlyCaptures) {}
 
 uint64_t MoveGen::perft(Board& board, int depth, bool isRoot)
 {
-        MoveList list;
+        std::vector<Move> list;
         generateMoves(board, list);
         uint64_t totalNodes = 0;
 
@@ -25,7 +26,7 @@ uint64_t MoveGen::perft(Board& board, int depth, bool isRoot)
                                 std::cout << board.moveToString(move) << " 1" << std::endl;
                         }
                 }
-                return list.count;
+                return list.size();
         }
 
         for (Move move : list)
@@ -44,7 +45,7 @@ uint64_t MoveGen::perft(Board& board, int depth, bool isRoot)
         return totalNodes;
 }
 
-void MoveGen::generateMoves(Board& board, MoveList& list)
+void MoveGen::generateMoves(Board& board, std::vector<Move>& list)
 {
 
         Bitboard* friendlyPieces = board.isWhiteTurn ? board.bitboards[0] : board.bitboards[1];
@@ -87,7 +88,7 @@ void MoveGen::generateMoves(Board& board, MoveList& list)
 
         if (onlyCaptures)
         {
-                for (int i = list.count - 1; i >= 0; i--)
+                for (int i = list.size() - 1; i >= 0; i--)
                 {
                         int pieceCount = std::popcount(board.allCombined);
                         board.makeMove(list[i]);
@@ -95,13 +96,13 @@ void MoveGen::generateMoves(Board& board, MoveList& list)
                         board.unmakeMove();
                         if (pieceCount == 0)
                         {
-                                list.erase(i);
+                                list.erase(list.begin() + i);
                         }
                 }
         }
 }
 
-void MoveGen::pawnGen(Board& board, int startPos, Bitboard bitPos, MoveList& list)
+void MoveGen::pawnGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list)
 {
 
         Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
@@ -164,7 +165,7 @@ void MoveGen::pawnGen(Board& board, int startPos, Bitboard bitPos, MoveList& lis
         }
 }
 
-void MoveGen::knightGen(Board& board, int startPos, MoveList& list)
+void MoveGen::knightGen(Board& board, int startPos, std::vector<Move>& list)
 {
         Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
         for (int i = 0; i < 8 && knightMoves[startPos][i] != 255; i++)
@@ -178,7 +179,7 @@ void MoveGen::knightGen(Board& board, int startPos, MoveList& list)
         }
 }
 
-void MoveGen::bishopGen(Board& board, int startPos, Bitboard bitPos, MoveList& list)
+void MoveGen::bishopGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list)
 {
         Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
         Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
@@ -212,7 +213,7 @@ void MoveGen::bishopGen(Board& board, int startPos, Bitboard bitPos, MoveList& l
         }
 }
 
-void MoveGen::rookGen(Board& board, int startPos, Bitboard bitPos, MoveList& list)
+void MoveGen::rookGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list)
 {
         Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
         Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
@@ -247,7 +248,7 @@ void MoveGen::rookGen(Board& board, int startPos, Bitboard bitPos, MoveList& lis
         }
 }
 
-void MoveGen::kingGen(Board& board, int startPos, Bitboard bitPos, MoveList& list)
+void MoveGen::kingGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list)
 {
         Bitboard friendlyPieces = board.isWhiteTurn ? board.bitboards[0][7] : board.bitboards[1][7];
         Bitboard opponentPieces = board.isWhiteTurn ? board.bitboards[1][7] : board.bitboards[0][7];
@@ -488,10 +489,6 @@ bool MoveGen::tryMove(Board& board, Move testMove, int kingSquare)
 
         board.makeMove(testMove);
 
-        if (onlyCaptures)
-        {
-        }
-
         bool legal = !isAttacked(board, std::countr_zero(friendlyKing));
 
         board.unmakeMove();
@@ -524,7 +521,7 @@ int MoveGen::disToEdge(int startPos, int direction)
         return -1;
 }
 
-void MoveGen::addPawnMove(int startPos, int endPos, bool isPromotion, MoveList& list)
+void MoveGen::addPawnMove(int startPos, int endPos, bool isPromotion, std::vector<Move>& list)
 {
         if (isPromotion)
         {

@@ -1,9 +1,11 @@
 #ifndef MOVEGEN_H
 #define MOVEGEN_H
 
-#include "../containers/movelist.h"
+#include "../types/move.h"
 #include "../types/piece.h"
 #include "../types/types.h"
+
+#include <vector>
 
 class Board;
 
@@ -155,17 +157,17 @@ public:
         MoveGen(bool onlyCaptures);
 
         uint64_t perft(Board& board, int depth, bool isRoot);
-        void generateMoves(Board& board, MoveList& list);
-        static void addPawnMove(int startPos, int endPos, bool isPromotio, MoveList& list);
+        void generateMoves(Board& board, std::vector<Move>& list);
+        static void addPawnMove(int startPos, int endPos, bool isPromotio, std::vector<Move>& list);
         static bool isAttacked(Board& board, int targetSquare);
 
-        void kingGen(Board& board, int startPos, Bitboard bitPos, MoveList& list);
+        void kingGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list);
 
 private:
-        void pawnGen(Board& board, int startPos, Bitboard bitPos, MoveList& list);
-        void knightGen(Board& board, int startPos, MoveList& list);
-        void bishopGen(Board& board, int startPos, Bitboard bitPos, MoveList& list);
-        void rookGen(Board& board, int startPos, Bitboard bitPos, MoveList& list);
+        void pawnGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list);
+        void knightGen(Board& board, int startPos, std::vector<Move>& list);
+        void bishopGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list);
+        void rookGen(Board& board, int startPos, Bitboard bitPos, std::vector<Move>& list);
 
         static bool pawnAttacks(Board& board, int targetSquare);
         static bool knightAttacks(Board& board, int targetSquare);
